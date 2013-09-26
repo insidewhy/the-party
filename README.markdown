@@ -11,11 +11,11 @@ The best ES6 to ES5 transpiler with support for source maps!
     Options:
 
       -h, --help          output usage information
-      -o, --output <dir>  Output directory
+      -o, --output <dir>  Output transpiled files to <dir>
       -d, --dump          Dump ASTs
        --dump-locs        Include locs in dump
        --dump-sources     Dump source ASTs rather than compiled ASTs
-      -s, --source-maps   Generate source maps
+      -m, --source-maps   Generate source maps
 
 ## Support
 

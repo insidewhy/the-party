@@ -3,7 +3,7 @@ module opts from 'commander'
 
 exports.main = function(args) {
   opts
-    .option('-o, --output <dir>', 'Output directory')
+    .option('-o, --output <dir>', 'Output compiled JavaScript files to <dir>')
     .option('-d, --dump', 'Dump ASTs')
     .option(' --dump-locs', 'Include locs in dump')
     .option(' --dump-sources', 'Dump source ASTs rather than compiled ASTs')
