@@ -1,0 +1,24 @@
+{
+  "name":    "the-party",
+  "description": "An ES6 -> ES5 transpiler with support for source maps.",
+  "author": {
+    "name": "James Pike"
+  },
+  "version": "0.0.1",
+  "dependencies": {
+    "esprima-the-party": "1.1.0-dev-harmony",
+    "escodegen": "0.0.27",
+    "commander": "2.0.0"
+  },
+  "devDependencies" : {
+    "mocha": "1.13.0",
+    "chai":  "1.8.0"
+  },
+  "directories": {
+    "lib": "./lib"
+  },
+  "main": "./lib/the-party.js",
+  "engine": [
+    "node >=0.8.0"
+  ]
+}
