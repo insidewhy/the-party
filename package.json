@@ -1,6 +1,7 @@
 {
   "name":    "the-party",
   "description": "An ES6 -> ES5 transpiler with support for source maps.",
+  "repository": "git://github.com/nuisanceofcats/the-party",
   "author": {
     "name": "James Pike"
   },
@@ -12,7 +13,8 @@
   },
   "devDependencies" : {
     "mocha": "1.13.0",
-    "chai":  "1.8.0"
+    "chai":  "1.8.0",
+    "grunt": "0.4.1"
   },
   "directories": {
     "lib": "./lib"
