@@ -130,8 +130,10 @@ var functionHelper = (ast, compile) => {
 }
 
 /// The AST for this is already appropriate
-exports.Property = ast => {
+exports.Property = (ast, compile) => {
   ast.shorthand = false
+  ast.method = false // { f() {} } => { f: function() {} }
+  ast.value = compile(ast.value)
   return ast
 }
 

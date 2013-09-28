@@ -8,7 +8,6 @@ The best ES6 to ES5 transpiler!
     * Non-modular systems (by concatenating modules with their dependencies into a single output file).
 
 ## Usage
-
     $ the-party -h
 
     Usage: the-party [options]
@@ -25,20 +24,36 @@ The best ES6 to ES5 transpiler!
 ## Support
 
 ### Module loading
-    module fs from 'fs'
+```JavaScript
+module fs from 'fs'
+```
 
 ### Shorter functions
-    function isEven(a) a % 2 // => function isEven(a) { return a % 2 }
+```JavaScript
+function isEven(a) a % 2 // => function isEven(a) { return a % 2 }
+```
 
 ### Arrow functions
-    var happyPrint = a => { console.log('totoro', a) }
-    var isEven = a => a % 2
+```JavaScript
+var happyPrint = a => { console.log('totoro', a) }
+var isEven = a => a % 2
+```
 
 ### Rest parameters
-    function toArray(p1, p2, ...p3on) {
-      // p3on will be an array of any extra parameters passed after p2
-    }
+```JavaScript
+function toArray(p1, p2, ...p3on) {
+  // p3on will be an array of any extra parameters passed after p2
+}
+```
 
-### Object shorthand notation
-    var field = 16,
-        object = { field }  // equivalent to { field: field }
+### Object shorthand field notation
+```JavaScript
+var field = 16,
+    object = { field }  // equivalent to { field: field }
+```
+
+### Object shorthand method shorthand
+```JavaScript
+// equivalent to { m: function() { return "method" } }
+var o = { m() { return "method" } }
+```
