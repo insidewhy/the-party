@@ -41,8 +41,14 @@ module.exports = function(grunt) {
   grunt.registerTask('default', 'build')
 
   // build tests and run them
-  grunt.registerTask('test', function() {
+  grunt.registerTask('test', 'Build tests and run them.', function() {
     grunt.task.run('buildTests')
     grunt.task.run('mochaTest')
+  })
+
+  // Run all tasks
+  grunt.registerTask('all', 'Bootstrap code and run tests.', function() {
+    grunt.task.run('build')
+    grunt.task.run('test')
   })
 }
