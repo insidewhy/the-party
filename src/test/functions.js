@@ -28,7 +28,7 @@ describe('functions', () => {
     expect(isEven(9)).to.equal(false)
   })
 
-  it('function with rest parameters', () => {
+  it('functions with rest parameters', () => {
     eval(compile('function tail(a, ...b) { return b }'))
     expect(tail(1,2,3)).to.eql([2, 3])
 

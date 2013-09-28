@@ -38,3 +38,7 @@ The best ES6 to ES5 transpiler!
     function toArray(p1, p2, ...p3on) {
       // p3on will be an array of any extra parameters passed after p2
     }
+
+### Object shorthand notation
+    var field = 16,
+        object = { field }  // equivalent to { field: field }

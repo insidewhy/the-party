@@ -129,6 +129,12 @@ var functionHelper = (ast, compile) => {
   return ast
 }
 
+/// The AST for this is already appropriate
+exports.Property = ast => {
+  ast.shorthand = false
+  return ast
+}
+
 exports.FunctionExpression = exports.FunctionDeclaration = functionHelper
 
 exports.ArrowFunctionExpression = (ast, compile) => {
