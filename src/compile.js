@@ -4,25 +4,20 @@ function raw(str) { return "'" + str + "'" }
 
 /// Mutates harmony module alias ast into es5 ast
 exports.ModuleDeclaration = ast => {
+  var loc = ast.loc
   return {
     type: "VariableDeclaration",
-    declarations: [
-      {
-        type: "VariableDeclarator",
-        id: ast.id,
-        init: {
-          type: "CallExpression",
-          callee: {
-            type: "Identifier",
-            name: "require",
-            loc: ast.loc
-          },
-          arguments: [ ast.source ]
-        }
+    declarations: [{
+      type: "VariableDeclarator",
+      id: ast.id,
+      init: {
+        type: "CallExpression",
+        callee: { type: "Identifier", name: "require", loc },
+        arguments: [ ast.source ]
       }
-    ],
+    }],
     kind: "var",
-    loc: ast.loc
+    loc
   }
 }
 
@@ -32,17 +27,14 @@ exports.ModuleDeclaration = ast => {
 var compileRestParams = ast => {
   var rest = ast.rest, nParams = ast.params.length
 
-  var sliceArgs = [{
-    type: "Identifier",
-    name: "arguments",
-    loc: rest.loc
-  }]
+  var loc = rest.loc
+  var sliceArgs = [{ type: "Identifier", name: "arguments", loc }]
   if (nParams > 0) {
     sliceArgs.push({
       type: "Literal",
       value: nParams,
       raw: nParams.toString(),
-      loc: rest.loc
+      loc
     })
   }
 
@@ -51,11 +43,7 @@ var compileRestParams = ast => {
     declarations: [
       {
         type: "VariableDeclarator",
-        id: {
-          type: "Identifier",
-          name: rest.name,
-          loc: rest.loc
-        },
+        id: { type: "Identifier", name: rest.name, loc },
         init: {
           type: "CallExpression",
           callee: {
@@ -67,55 +55,35 @@ var compileRestParams = ast => {
               object: {
                 type: "MemberExpression",
                 computed: false,
-                object: {
-                  type: "Identifier",
-                  name: "Array",
-                  loc: rest.loc
-                },
-                property: {
-                  type: "Identifier",
-                  name: "prototype",
-                  loc: rest.loc
-                },
-                loc: rest.loc
+                object: { type: "Identifier", name: "Array", loc },
+                property: { type: "Identifier", name: "prototype", loc },
+                loc
               },
-              property: {
-                type: "Identifier",
-                name: "slice",
-                loc: rest.loc
-              },
-              loc: rest.loc
+              property: { type: "Identifier", name: "slice", loc },
+              loc
             },
-            property: {
-              type: "Identifier",
-              name: "call",
-              loc: rest.loc
-            },
-            loc: rest.loc
+            property: { type: "Identifier", name: "call", loc },
+            loc
           },
           arguments: sliceArgs,
-          loc: rest.loc
+          loc
         },
-        loc: rest.loc
+        loc
       }
     ],
     kind: "var",
-    loc: rest.loc
+    loc
   })
 }
 
 var functionHelper = (ast, compile) => {
   if (ast.expression) {
     // "function a() b" -> "function a() { return b }"
-    var existing = ast.body
+    var existing = ast.body, loc = existing.loc
     ast.body = {
       type: "BlockStatement",
-      body: [{
-        type: "ReturnStatement",
-        argument: existing,
-        loc: existing.loc
-      }],
-      loc: existing.loc
+      body: [{ type: "ReturnStatement", argument: existing, loc }],
+      loc
     }
     ast.expression = false
   }
@@ -131,7 +99,7 @@ var functionHelper = (ast, compile) => {
 
 /// The AST for this is already appropriate
 exports.Property = (ast, compile) => {
-  ast.shorthand = false
+  ast.shorthand = false // { a } => { a: a }
   ast.method = false // { f() {} } => { f: function() {} }
   ast.value = compile(ast.value)
   return ast
@@ -141,21 +109,22 @@ exports.FunctionExpression = exports.FunctionDeclaration = functionHelper
 
 exports.ArrowFunctionExpression = (ast, compile) => {
   ast.type = 'FunctionExpression'
+  var loc = ast.loc
 
+  // bind the function with this from the current scope
   return {
     type: "CallExpression",
     callee: {
       type: "MemberExpression",
       computed: false,
       object: exports.FunctionExpression(ast, compile),
-      property: {
-        type: "Identifier",
-        name: "bind",
-        loc: ast.loc
-      },
-      loc: ast.loc
+      property: { type: "Identifier", name: "bind", loc },
+      loc
     },
-    arguments: [{ type: "ThisExpression", loc: ast.loc }],
-    loc: ast.loc
+    arguments: [{ type: "ThisExpression", loc }],
+    loc
   }
+}
+
+exports.ExportDeclaration = (ast, compile) => {
 }
