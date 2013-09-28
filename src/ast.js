@@ -5,9 +5,7 @@ function compileNode(node) {
   if (node instanceof Array) {
     var out = []
     out.length = node.length
-    node.forEach(function (v, i) {
-      out[i] = compileNode(v)
-    })
+    node.forEach((v, i) => { out[i] = compileNode(v) })
     return out
   }
   else if (typeof node === 'object') {
@@ -18,32 +16,31 @@ function compileNode(node) {
   }
 }
 
-function compileObjectNode(ast) {
-  var out = {}
-
-  switch (ast.type) {
-    case 'ModuleDeclaration':
-      return compile.moduleAlias(ast)
-
-    default:
-      for (var k in ast) {
-        if (k === 'range')
-          out[k] = ast[k]
-        else
-          out[k] = compileNode(ast[k])
-      }
-      return out
+var compileObjectNode = exports.compileObjectNode = ast => {
+  var handler = compile[ast.type]
+  if (handler) {
+    return handler(ast, compileNode)
+  }
+  else {
+    var out = {}
+    for (var k in ast) {
+      if (k === 'range')
+        out[k] = ast[k]
+      else
+        out[k] = compileNode(ast[k])
+    }
+    return out
   }
 }
 
 /// Compile asts
 /// @param asts { file: ast }*
 /// @retval { file: compiled_ast }*
-exports.compile = function(asts) {
+/// @todo Load extra modules as they are imported
+exports.compile = asts => {
   var compiled = {}
-  Object.keys(asts).forEach(function(key) {
-    var val = asts[key]
-    compiled[key] = compileObjectNode(val)
+  Object.keys(asts).forEach(key => {
+    compiled[key] = compileObjectNode(asts[key])
   })
 
   return compiled

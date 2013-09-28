@@ -1,9 +1,9 @@
 function raw(str) { return "'" + str + "'" }
 
-// %s/\(.*\): /\1: /g
+// %s/"\([^]*\): /\1: /g
 
 /// Mutates harmony module alias ast into es5 ast
-exports.moduleAlias = function(ast) {
+exports.ModuleDeclaration = ast => {
   return {
     type: "VariableDeclaration",
     declarations: [
@@ -26,3 +26,48 @@ exports.moduleAlias = function(ast) {
   }
 }
 
+var functionHelper = (ast, compile) => {
+  // TODO: support rest parameters
+  if (ast.expression) {
+    // "function a() b" -> "function a() { return b }"
+    var existing = ast.body
+    ast.body = {
+      type: "BlockStatement",
+      body: [{
+        type: "ReturnStatement",
+        argument: existing,
+        loc: existing.loc
+      }],
+      loc: existing.loc
+    }
+    ast.expression = false
+  }
+  else {
+    ast.body = compile(ast.body)
+  }
+
+  return ast
+}
+
+exports.FunctionExpression = exports.FunctionDeclaration = functionHelper
+
+exports.ArrowFunctionExpression = (ast, compile) => {
+  ast.type = 'FunctionExpression'
+
+  return {
+    type: "CallExpression",
+    callee: {
+      type: "MemberExpression",
+      computed: false,
+      object: exports.FunctionExpression(ast, compile),
+      property: {
+        type: "Identifier",
+        name: "bind",
+        loc: ast.loc
+      },
+      loc: ast.loc
+    },
+    arguments: [{ type: "ThisExpression", loc: ast.loc }],
+    loc: ast.loc
+  }
+}
