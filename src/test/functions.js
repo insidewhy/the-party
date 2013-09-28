@@ -27,4 +27,12 @@ describe('functions', () => {
     expect(isEven(8)).to.equal(true)
     expect(isEven(9)).to.equal(false)
   })
+
+  it('function with rest parameters', () => {
+    eval(compile('function tail(a, ...b) { return b }'))
+    expect(tail(1,2,3)).to.eql([2, 3])
+
+    eval(compile('function toArray(...b) { return b }'))
+    expect(toArray(1,2,3)).to.eql([1, 2, 3])
+  })
 })

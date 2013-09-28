@@ -33,3 +33,8 @@ The best ES6 to ES5 transpiler!
 ### Arrow functions
     var happyPrint = a => { console.log('totoro', a) }
     var isEven = a => a % 2
+
+### Rest parameters
+    function toArray(p1, p2, ...p3on) {
+      // p3on will be an array of any extra parameters passed after p2
+    }
