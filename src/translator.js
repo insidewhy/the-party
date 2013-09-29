@@ -38,25 +38,30 @@ export function VariableDeclaration(ast, compile) {
       newDecls = [],
       loc
 
-  var walkObjectPattern = (init, props) => {
+  var walkObjectPattern = (src, props) => {
     props.forEach(prop => {
       var loc = prop.loc, newDecl = {
         type: "VariableDeclarator",
         init: {
           type: "MemberExpression",
           computed: false,
-          object: init,
+          object: src,
           property: prop.key,
           loc
         }
       }
 
-      if (prop.value.type === 'ObjectPattern') {
+      var isObjectPattern = prop.value.type === 'ObjectPattern'
+      if (isObjectPattern || prop.value.type === 'ArrayPattern') {
         // assign key to temporary id
         newDecl.id = uniqueId(loc)
         newDecls.push(newDecl)
+
         // then recurse into the pattern, assigning from the temporary id
-        walkObjectPattern(newDecl.id, prop.value.properties)
+        if (isObjectPattern)
+          walkObjectPattern(newDecl.id, prop.value.properties)
+        else
+          walkArrayPattern(newDecl.id, prop.value.elements)
       }
       else {
         newDecl.id = prop.value
@@ -65,8 +70,50 @@ export function VariableDeclaration(ast, compile) {
     })
   }
 
+  var walkArrayPattern = (src, elements) => {
+    elements.forEach((element, idx) => {
+      // skip "[ , ... ], just let idx increment
+      if (element === null)
+        return
+
+      var loc = element.loc, newDecl = {
+        type: "VariableDeclarator",
+        init: {
+          type: "MemberExpression",
+          computed: true,
+          object: src,
+          property: {
+            type: "Literal",
+            value: idx,
+            raw: idx.toString(),
+            loc
+          },
+          loc
+        },
+        loc
+      }
+
+      var isObjectPattern = element.type === 'ObjectPattern'
+      if (isObjectPattern || element.type === 'ArrayPattern') {
+        newDecl.id = uniqueId(loc)
+        newDecls.push(newDecl)
+        // then recurse into the pattern, assigning from the temporary id
+        if (isObjectPattern)
+          walkObjectPattern(newDecl.id, element.properties)
+        else
+          walkArrayPattern(newDecl.id, element.elements)
+      }
+      // TODO: last: {  type: "SpreadElement", argument: { type: "Identifier", name } }
+      else {
+        newDecl.id = element
+        newDecls.push(newDecl)
+      }
+    })
+  }
+
   ast.declarations.forEach(decl => {
-    if (decl.id.type === 'ObjectPattern') {
+    var isObjectPattern = decl.id.type === 'ObjectPattern'
+    if (isObjectPattern || decl.id.type === 'ArrayPattern') {
       var init = decl.init
       if (init.type !== 'Identifier') {
         loc = init.loc
@@ -79,7 +126,10 @@ export function VariableDeclaration(ast, compile) {
         init = id
       }
 
-      walkObjectPattern(init, decl.id.properties)
+      if (isObjectPattern)
+        walkObjectPattern(init, decl.id.properties)
+      else
+        walkArrayPattern(init, decl.id.elements)
     }
     else {
       decl.init = compile(decl.init)
