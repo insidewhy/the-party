@@ -1,4 +1,4 @@
-module compile from './compile'
+module codegen from './codegen'
 
 // Tree walking stuff
 function compileNode(node) {
@@ -16,8 +16,8 @@ function compileNode(node) {
   }
 }
 
-var compileObjectNode = exports.compileObjectNode = ast => {
-  var handler = compile[ast.type]
+export function compileObjectNode(ast) {
+  var handler = codegen[ast.type]
   if (handler) {
     return handler(ast, compileNode)
   }
@@ -37,7 +37,7 @@ var compileObjectNode = exports.compileObjectNode = ast => {
 /// @param asts { file: ast }*
 /// @retval { file: compiled_ast }*
 /// @todo Load extra modules as they are imported
-exports.compile = asts => {
+export function compile(asts) {
   var compiled = {}
   Object.keys(asts).forEach(key => {
     compiled[key] = compileObjectNode(asts[key])

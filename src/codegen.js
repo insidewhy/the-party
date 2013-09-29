@@ -3,7 +3,7 @@ function raw(str) { return "'" + str + "'" }
 // %s/"\([^" ]*\)": /\1: /g
 
 /// Mutates harmony module alias ast into es5 ast
-exports.ModuleDeclaration = ast => {
+export function ModuleDeclaration(ast) {
   var loc = ast.loc
   return {
     type: "VariableDeclaration",
@@ -97,17 +97,18 @@ var functionHelper = (ast, compile) => {
   return ast
 }
 
+export var FunctionExpression = functionHelper,
+           FunctionDeclaration = functionHelper
+
 /// The AST for this is already appropriate
-exports.Property = (ast, compile) => {
+export function Property(ast, compile) {
   ast.shorthand = false // { a } => { a: a }
   ast.method = false // { f() {} } => { f: function() {} }
   ast.value = compile(ast.value)
   return ast
 }
 
-exports.FunctionExpression = exports.FunctionDeclaration = functionHelper
-
-exports.ArrowFunctionExpression = (ast, compile) => {
+export function ArrowFunctionExpression(ast, compile) {
   ast.type = 'FunctionExpression'
   var loc = ast.loc
 
@@ -126,7 +127,7 @@ exports.ArrowFunctionExpression = (ast, compile) => {
   }
 }
 
-exports.ExportDeclaration = (ast, compile) => {
+export function ExportDeclaration(ast, compile) {
   var declaration = ast.declaration
   var loc, ret
 

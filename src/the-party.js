@@ -57,7 +57,7 @@ function outputCode(compiledSources, targetDir) {
 //      dumpLocs: When dump or dumpSources is set then location data is removed from the AST unless this parameter is used.
 ///
 /// @retval Data of the form { sourcePath: code } where code can be an AST (if dumpSources or dump was set) or an object of the form { map, code }
-exports.compile = (scripts, opts) => {
+export function compile(scripts, opts) {
   if (typeof scripts === 'string') {
     // scripts = code to be compiled
     var compiledAst = ast.compileObjectNode(esprima.parse(scripts))
