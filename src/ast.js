@@ -1,4 +1,4 @@
-module codegen from './codegen'
+module translator from './translator'
 
 // Tree walking stuff
 function compileNode(node) {
@@ -17,7 +17,7 @@ function compileNode(node) {
 }
 
 export function compileObjectNode(ast) {
-  var handler = codegen[ast.type]
+  var handler = translator[ast.type]
   if (handler) {
     return handler(ast, compileNode)
   }
