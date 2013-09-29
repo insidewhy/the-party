@@ -24,6 +24,13 @@ describe('objects', () => {
     expect(b).to.equal(2)
   })
 
+  it('Recursive object expression variable declaration', () => {
+    eval(compile('var o = { x: 1, y: { a: 2, b: 3 } };' +
+                 'var { y: { a, b: c } } = o;'))
+    expect(a).to.equal(2)
+    expect(c).to.equal(3)
+  })
+
   it('Caches object expression init', () => {
     eval(compile('var __i = 1; var m = () => ({ i: ++__i, j: ++__i });' +
                  'var {i, j} = m(); var {i: x, j: y} = m()'))

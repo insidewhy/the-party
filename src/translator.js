@@ -51,21 +51,28 @@ export function VariableDeclaration(ast, compile) {
       }
 
       var recursePattern = (init, props) => {
-        decl.id.properties.forEach(prop => {
+        props.forEach(prop => {
+          var loc = prop.loc, newDecl = {
+            type: "VariableDeclarator",
+            init: {
+              type: "MemberExpression",
+              computed: false,
+              object: init,
+              property: prop.key,
+              loc
+            }
+          }
+
           if (prop.value.type === 'Identifier') {
-            newDecls.push({
-              type: "VariableDeclarator",
-              id: prop.value,
-              init: {
-                type: "MemberExpression",
-                computed: false,
-                object: init,
-                property: prop.key
-              }
-            })
+            newDecl.id = prop.value
+            newDecls.push(newDecl)
           }
           else {
-            // TODO: recurse
+            // assign key to temporary id
+            newDecl.id = uniqueId(loc)
+            newDecls.push(newDecl)
+            // then recurse into the pattern, assigning from the temporary id
+            recursePattern(newDecl.id, prop.value.properties)
           }
         })
       }

@@ -75,10 +75,14 @@ var o = { m() { return "method" } }
 ### Variable declaration via object expression
 ```JavaScript
 var o = { x: 1, y: 2 };
-var {x, y} = o;       // equivalent to var x = o.x, y = o.y
-var {x: a, y: b} = o; // equivalent to var a = o.x, b = o.y
+var {x, y} = o;       // equivalent to var x = o.x, y = o.y;
+var {x: a, y: b} = o; // equivalent to var a = o.x, b = o.y;
 
 var m = () => ({ p: ++o.x, q: ++o.y })
+// equivalent to var $$1 = m(), p = $$1.p, q = $$1.q;
 var {p, q} = m();
-// equivalent to var $$1 = m(), p = $$1.p, q = $$1.q
+
+o = { x: 1, y: { a: 2, b: 3 } }
+// equivalent to: var $$2 = o.y; a = $$2.a; c = $$2.b;
+var { y: {a, b: c}} = o; // a = 2, c = 3
 ```
