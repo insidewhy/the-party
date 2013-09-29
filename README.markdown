@@ -71,3 +71,14 @@ var field = 16,
 // equivalent to { m: function() { return "method" } }
 var o = { m() { return "method" } }
 ```
+
+### Variable declaration via object expression
+```JavaScript
+var o = { x: 1, y: 2 };
+var {x, y} = o;       // equivalent to var x = o.x, y = o.y
+var {x: a, y: b} = o; // equivalent to var a = o.x, b = o.y
+
+var m = () => ({ p: ++o.x, q: ++o.y })
+var {p, q} = m();
+// equivalent to var $$1 = m(), p = $$1.p, q = $$1.q
+```

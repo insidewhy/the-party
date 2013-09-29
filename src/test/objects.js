@@ -14,6 +14,16 @@ describe('objects', () => {
     expect(o.m()).to.equal(45)
   })
 
+  it('Simple object expression variable declaration', () => {
+    eval(compile('var o = { x: 1, y: 2 };' +
+                 'var {x, y} = o, { x: a, y: b } = o;'))
+
+    expect(x).to.equal(1)
+    expect(y).to.equal(2)
+    expect(a).to.equal(1)
+    expect(b).to.equal(2)
+  })
+
   it('Caches object expression init', () => {
     eval(compile('var __i = 1; var m = () => ({ i: ++__i, j: ++__i });' +
                  'var {i, j} = m(); var {i: x, j: y} = m()'))
