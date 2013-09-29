@@ -21,6 +21,53 @@ export function ModuleDeclaration(ast) {
   }
 }
 
+export function VariableDeclaration(ast, compile) {
+  var id = ast.id
+  var newDecls = []
+
+  ast.declarations.forEach(decl => {
+    if (decl.id.type === 'ObjectPattern') {
+      if (decl.init.type !== 'Identifier') {
+        // create a newDecl to alias init
+      }
+
+      decl.id.properties.forEach(prop => {
+        // TODO: push declaration into newDecls for prop component
+      })
+
+      // var ret = {
+      //   type: "VariableDeclarator",
+      //   id: {
+      //     type: "Identifier",
+      //     name: "a"
+      //   },
+      //   init: {
+      //     type: "MemberExpression",
+      //     computed: false,
+      //     object: {
+      //       type: "Identifier",
+      //       name: "o"
+      //     },
+      //     property: {
+      //       type: "Identifier",
+      //       name: "a"
+      //     }
+      //   }
+      // }
+
+      // TODO: erase me
+      decl.init = compile(decl.init)
+      newDecls.push(decl)
+    }
+    else {
+      decl.init = compile(decl.init)
+      newDecls.push(decl)
+    }
+  })
+
+  return ast
+}
+
 /// Compile rest params
 /// @param ast Ast of function that contains the rest parameter (it's body
 ///            has to be altered).
@@ -118,7 +165,7 @@ export function ArrowFunctionExpression(ast, compile) {
     callee: {
       type: "MemberExpression",
       computed: false,
-      object: exports.FunctionExpression(ast, compile),
+      object: FunctionExpression(ast, compile),
       property: { type: "Identifier", name: "bind", loc },
       loc
     },
@@ -134,9 +181,8 @@ export function ExportDeclaration(ast, compile) {
   // TODO if (declaration.type === 'ClassDeclaration') {
 
   if (declaration.type === 'FunctionDeclaration') {
-    // converts function declaration to variable declaration of
-    // equivalent function expression, it will then by exported
-    // by the next if block
+    // converts function declaration to equivalent variable declaration of
+    // function expression
     var funcExpression = declaration,
         id = funcExpression.id
 
@@ -156,6 +202,7 @@ export function ExportDeclaration(ast, compile) {
     }
   }
 
+  // May also act on a converted FunctionDeclaration
   if (declaration.type === 'VariableDeclaration') {
     declaration.declarations.forEach(decl => {
       loc = decl.loc
