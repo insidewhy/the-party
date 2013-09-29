@@ -21,12 +21,24 @@ The best ES6 to ES5 transpiler!
       -S, --dump-sources  Dump source ASTs rather than compiled ASTs
       -m, --source-maps   Generate source maps
 
-## Support
+# Support
+
+## Modules
 
 ### Module loading
 ```JavaScript
-module fs from 'fs'
+module fs from 'fs' // var fs = require('fs')
 ```
+
+### Exporting variables from a module
+```JavaScript
+export var a = 16  // var a = exports.a = 16
+```
+
+### Exporting functions from a module
+export function help() { return "yes!" }
+
+## Functions
 
 ### Shorter functions
 ```JavaScript
@@ -45,6 +57,8 @@ function toArray(p1, p2, ...p3on) {
   // p3on will be an array of any extra parameters passed after p2
 }
 ```
+
+## Objects
 
 ### Object shorthand field notation
 ```JavaScript

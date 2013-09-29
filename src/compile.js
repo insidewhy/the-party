@@ -127,4 +127,56 @@ exports.ArrowFunctionExpression = (ast, compile) => {
 }
 
 exports.ExportDeclaration = (ast, compile) => {
+  var declaration = ast.declaration
+  var loc, ret
+
+  // TODO if (declaration.type === 'ClassDeclaration') {
+
+  if (declaration.type === 'FunctionDeclaration') {
+    // converts function declaration to variable declaration of
+    // equivalent function expression, it will then by exported
+    // by the next if block
+    var funcExpression = declaration,
+        id = funcExpression.id
+
+    funcExpression.id = null
+    funcExpression.type = 'FunctionExpression'
+
+    loc = funcExpression.loc
+    declaration = {
+      type: "VariableDeclaration",
+      declarations: [{
+        type: "VariableDeclarator", id,
+        init: funcExpression,
+        loc
+      }],
+      kind: 'var',
+      loc
+    }
+  }
+
+  if (declaration.type === 'VariableDeclaration') {
+    declaration.declarations.forEach(decl => {
+      loc = decl.loc
+      var prevInit = decl.init
+      decl.init =  {
+        type: "AssignmentExpression",
+        operator: "=",
+        left: {
+          type: "MemberExpression",
+          computed: false,
+          object: { type: "Identifier", name: "exports", loc },
+          property: decl.id,
+          loc
+        },
+        right: compile(prevInit),
+        loc
+      }
+    })
+
+    return declaration
+  }
+  else {
+    return ast
+  }
 }
