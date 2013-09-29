@@ -27,43 +27,41 @@ export function VariableDeclaration(ast, compile) {
 
   ast.declarations.forEach(decl => {
     if (decl.id.type === 'ObjectPattern') {
-      if (decl.init.type !== 'Identifier') {
-        // create a newDecl to alias init
+      var init = decl.init
+      if (init.type !== 'Identifier') {
+        var prevInit = init
+        // TODO: init = (alias for compile(prevInit))
       }
 
-      decl.id.properties.forEach(prop => {
-        // TODO: push declaration into newDecls for prop component
-      })
+      var recursePattern = (init, props) => {
+        decl.id.properties.forEach(prop => {
+          if (prop.value.type === 'Identifier') {
+            newDecls.push({
+              type: "VariableDeclarator",
+              id: prop.value,
+              init: {
+                type: "MemberExpression",
+                computed: false,
+                object: init,
+                property: prop.key
+              }
+            })
+          }
+          else {
+            // TODO: recurse
+          }
+        })
+      }
 
-      // var ret = {
-      //   type: "VariableDeclarator",
-      //   id: {
-      //     type: "Identifier",
-      //     name: "a"
-      //   },
-      //   init: {
-      //     type: "MemberExpression",
-      //     computed: false,
-      //     object: {
-      //       type: "Identifier",
-      //       name: "o"
-      //     },
-      //     property: {
-      //       type: "Identifier",
-      //       name: "a"
-      //     }
-      //   }
-      // }
-
-      // TODO: erase me
-      decl.init = compile(decl.init)
-      newDecls.push(decl)
+      recursePattern(init, decl.id.properties)
     }
     else {
       decl.init = compile(decl.init)
       newDecls.push(decl)
     }
   })
+
+  ast.declarations = newDecls
 
   return ast
 }
