@@ -36,7 +36,9 @@ export var a = 16  // var a = exports.a = 16
 ```
 
 ### Exporting functions from a module
+```JavaScript
 export function help() { return "yes!" }
+```
 
 ## Functions
 
@@ -66,7 +68,7 @@ var field = 16,
     object = { field }  // equivalent to { field: field }
 ```
 
-### Object shorthand method shorthand
+### Object shorthand method notation
 ```JavaScript
 // equivalent to { m: function() { return "method" } }
 var o = { m() { return "method" } }

@@ -23,8 +23,10 @@ export function ModuleDeclaration(ast) {
       init: {
         type: "CallExpression",
         callee: { type: "Identifier", name: "require", loc },
-        arguments: [ ast.source ]
-      }
+        arguments: [ ast.source ],
+        loc
+      },
+      loc
     }],
     kind: "var",
     loc
@@ -35,6 +37,33 @@ export function VariableDeclaration(ast, compile) {
   var id = ast.id,
       newDecls = [],
       loc
+
+  var walkObjectPattern = (init, props) => {
+    props.forEach(prop => {
+      var loc = prop.loc, newDecl = {
+        type: "VariableDeclarator",
+        init: {
+          type: "MemberExpression",
+          computed: false,
+          object: init,
+          property: prop.key,
+          loc
+        }
+      }
+
+      if (prop.value.type === 'ObjectPattern') {
+        // assign key to temporary id
+        newDecl.id = uniqueId(loc)
+        newDecls.push(newDecl)
+        // then recurse into the pattern, assigning from the temporary id
+        walkObjectPattern(newDecl.id, prop.value.properties)
+      }
+      else {
+        newDecl.id = prop.value
+        newDecls.push(newDecl)
+      }
+    })
+  }
 
   ast.declarations.forEach(decl => {
     if (decl.id.type === 'ObjectPattern') {
@@ -50,34 +79,7 @@ export function VariableDeclaration(ast, compile) {
         init = id
       }
 
-      var recursePattern = (init, props) => {
-        props.forEach(prop => {
-          var loc = prop.loc, newDecl = {
-            type: "VariableDeclarator",
-            init: {
-              type: "MemberExpression",
-              computed: false,
-              object: init,
-              property: prop.key,
-              loc
-            }
-          }
-
-          if (prop.value.type === 'Identifier') {
-            newDecl.id = prop.value
-            newDecls.push(newDecl)
-          }
-          else {
-            // assign key to temporary id
-            newDecl.id = uniqueId(loc)
-            newDecls.push(newDecl)
-            // then recurse into the pattern, assigning from the temporary id
-            recursePattern(newDecl.id, prop.value.properties)
-          }
-        })
-      }
-
-      recursePattern(init, decl.id.properties)
+      walkObjectPattern(init, decl.id.properties)
     }
     else {
       decl.init = compile(decl.init)

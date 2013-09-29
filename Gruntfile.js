@@ -1,4 +1,5 @@
-var readDir = require('fs').readdirSync
+var readDir = require('fs').readdirSync,
+    path    = require('path')
 
 module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-mocha-test')
@@ -7,15 +8,19 @@ module.exports = function(grunt) {
     pkg: grunt.file.readJSON('package.json'),
     mochaTest: { test: {
       options: { reporter: 'spec' },
-      src: [ 'test/**/*.js' ]
+      src: [ 'test/*.js' ]
     } }
   })
 
   function getSources(dir) {
     var match = /\.js$/, exclude = /\.js\.js$/
-    return readDir(dir).filter(function (f) {
+    var ret = readDir(dir).filter(function (f) {
       return match.test(f) && ! exclude.test(f)
     })
+    if (dir !== '.')
+      ret = ret.map(function (p) { return path.join(dir, p) })
+
+    return ret
   }
 
   grunt.registerTask('build', 'Bootstrap compiler', function() {
@@ -34,6 +39,7 @@ module.exports = function(grunt) {
     process.chdir('src/test')
 
     var srcs = getSources('.')
+    srcs = srcs.concat(getSources('inc'))
     theparty.compile(srcs, { output: '../../test' })
     process.chdir(cwd)
   })

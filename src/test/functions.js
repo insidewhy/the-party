@@ -1,7 +1,5 @@
-module theparty from '../lib/the-party'
-module chai from 'chai'
-
-var expect = chai.expect, compile = theparty.compile
+module common from './inc/common'
+var expect = common.expect, compile = common.compile
 
 describe('functions', () => {
   it('simplified function expressions', () => {
