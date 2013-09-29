@@ -13,4 +13,14 @@ describe('objects', () => {
     eval(compile('var o = { m() { return 45 } }'))
     expect(o.m()).to.equal(45)
   })
+
+  it('Caches object expression init', () => {
+    eval(compile('var __i = 1; var m = () => ({ i: ++__i, j: ++__i });' +
+                 'var {i, j} = m(); var {i: x, j: y} = m()'))
+
+    expect(i).to.equal(2)
+    expect(j).to.equal(3)
+    expect(x).to.equal(4)
+    expect(y).to.equal(5)
+  })
 })

@@ -1,6 +1,16 @@
+// %s/"\([^" ]*\)": /\1: /g
+
 function raw(str) { return "'" + str + "'" }
 
-// %s/"\([^" ]*\)": /\1: /g
+var __uniqueId = 0
+/// Make a unique Id
+function uniqueId(loc) {
+  return {
+    type: "Identifier",
+    name: "$$$" + (++__uniqueId).toString(36),
+    loc
+  }
+}
 
 /// Mutates harmony module alias ast into es5 ast
 export function ModuleDeclaration(ast) {
@@ -22,15 +32,22 @@ export function ModuleDeclaration(ast) {
 }
 
 export function VariableDeclaration(ast, compile) {
-  var id = ast.id
-  var newDecls = []
+  var id = ast.id,
+      newDecls = [],
+      loc
 
   ast.declarations.forEach(decl => {
     if (decl.id.type === 'ObjectPattern') {
       var init = decl.init
       if (init.type !== 'Identifier') {
-        var prevInit = init
-        // TODO: init = (alias for compile(prevInit))
+        loc = init.loc
+        var id = uniqueId(loc)
+        newDecls.push({
+          type: "VariableDeclarator", id, init: compile(init), loc
+        })
+
+        // then use the alias as the init from here...
+        init = id
       }
 
       var recursePattern = (init, props) => {
