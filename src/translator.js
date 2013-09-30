@@ -91,6 +91,58 @@ export function ModuleDeclaration(ast) {
   }
 }
 
+export function ImportDeclaration(ast) {
+  var loc = ast.loc
+
+  var requireExpression = {
+    type: "CallExpression",
+    callee: {
+      type: "Identifier",
+      name: "require",
+      loc
+    },
+    arguments: [ ast.source ],
+    loc
+  }
+
+  var moduleSrc, declarations = [ ]
+  if (ast.specifiers.length === 1) {
+    moduleSrc = requireExpression
+  }
+  else {
+    var id = uniqueId(loc)
+    moduleSrc = id
+    declarations[0] = {
+      type: "VariableDeclarator", init: requireExpression, id, loc
+    }
+  }
+
+  var ret = {
+    type: "VariableDeclaration",
+    declarations,
+    kind: 'var',
+    loc
+  }
+
+  ast.specifiers.forEach(specifier => {
+    var newDecl = {
+      type: "VariableDeclarator",
+      init: {
+        type: "MemberExpression",
+        computed: false,
+        object: moduleSrc,
+        property: specifier.id,
+        loc
+      }
+    }
+
+    newDecl.id = specifier.name || specifier.id
+
+    declarations.push(newDecl)
+  })
+
+  return ret
+}
 // } end modules
 
 // patterns {

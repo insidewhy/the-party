@@ -30,7 +30,10 @@ The best ES6 to ES5 transpiler!
 
 ### Module loading
 ```JavaScript
-module fs from 'fs' // var fs = require('fs')
+module fs from 'fs' // var fs = require('fs') ```
+import join from 'path' // var join = require('path').join
+// var $$1 = require('console'), log = $$1.log, shout = $$1.error
+import {log, error as shout} from 'console'
 ```
 
 ### Exporting variables from a module
