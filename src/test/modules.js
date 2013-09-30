@@ -20,7 +20,7 @@ describe('modules', () => {
 
   it('export variable complex variable declaration', () => {
     var exports = {}
-    eval(compile('o = {}; export var a = o.a = 32'))
+    eval(compile('var o = {}; export var a = o.a = 32'))
     expect(o.a).to.equal(32)
     expect(a).to.equal(32)
     expect(exports.a).to.equal(32)
