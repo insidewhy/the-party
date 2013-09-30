@@ -1,5 +1,6 @@
 // %s/"\([^" ]*\)": /\1: /g
 
+// utility stuff {
 function raw(str) { return "'" + str + "'" }
 
 var __uniqueId = 0
@@ -11,8 +12,65 @@ function uniqueId(loc) {
     loc
   }
 }
+// } end utility stuff
 
+// modules {
 /// Mutates harmony module alias ast into es5 ast
+export function ExportDeclaration(ast, compile) {
+  var declaration = ast.declaration
+  var loc, ret
+
+  // TODO if (declaration.type === 'ClassDeclaration')
+
+  if (declaration.type === 'FunctionDeclaration') {
+    // converts function declaration to equivalent variable declaration of
+    // function expression
+    var funcExpression = declaration,
+        id = funcExpression.id
+
+    funcExpression.id = null
+    funcExpression.type = 'FunctionExpression'
+
+    loc = funcExpression.loc
+    declaration = {
+      type: "VariableDeclaration",
+      declarations: [{
+        type: "VariableDeclarator", id,
+        init: funcExpression,
+        loc
+      }],
+      kind: 'var',
+      loc
+    }
+  }
+
+  // May also act on a converted FunctionDeclaration
+  if (declaration.type === 'VariableDeclaration') {
+    declaration.declarations.forEach(decl => {
+      loc = decl.loc
+      var prevInit = decl.init
+      decl.init =  {
+        type: "AssignmentExpression",
+        operator: "=",
+        left: {
+          type: "MemberExpression",
+          computed: false,
+          object: { type: "Identifier", name: "exports", loc },
+          property: decl.id,
+          loc
+        },
+        right: compile(prevInit),
+        loc
+      }
+    })
+
+    return declaration
+  }
+  else {
+    return ast
+  }
+}
+
 export function ModuleDeclaration(ast) {
   var loc = ast.loc
   return {
@@ -33,6 +91,9 @@ export function ModuleDeclaration(ast) {
   }
 }
 
+// } end modules
+
+// patterns {
 export function VariableDeclaration(ast, compile) {
   var id = ast.id,
       newDecls = [],
@@ -141,6 +202,9 @@ export function VariableDeclaration(ast, compile) {
 
   return ast
 }
+// } end patterns
+
+// functions {
 
 /// Compile rest params
 /// @param ast Ast of function that contains the rest parameter (it's body
@@ -221,14 +285,6 @@ var functionHelper = (ast, compile) => {
 export var FunctionExpression = functionHelper,
            FunctionDeclaration = functionHelper
 
-/// The AST for this is already appropriate
-export function Property(ast, compile) {
-  ast.shorthand = false // { a } => { a: a }
-  ast.method = false // { f() {} } => { f: function() {} }
-  ast.value = compile(ast.value)
-  return ast
-}
-
 export function ArrowFunctionExpression(ast, compile) {
   ast.type = 'FunctionExpression'
   var loc = ast.loc
@@ -248,57 +304,14 @@ export function ArrowFunctionExpression(ast, compile) {
   }
 }
 
-export function ExportDeclaration(ast, compile) {
-  var declaration = ast.declaration
-  var loc, ret
+// } end functions
 
-  // TODO if (declaration.type === 'ClassDeclaration') {
-
-  if (declaration.type === 'FunctionDeclaration') {
-    // converts function declaration to equivalent variable declaration of
-    // function expression
-    var funcExpression = declaration,
-        id = funcExpression.id
-
-    funcExpression.id = null
-    funcExpression.type = 'FunctionExpression'
-
-    loc = funcExpression.loc
-    declaration = {
-      type: "VariableDeclaration",
-      declarations: [{
-        type: "VariableDeclarator", id,
-        init: funcExpression,
-        loc
-      }],
-      kind: 'var',
-      loc
-    }
-  }
-
-  // May also act on a converted FunctionDeclaration
-  if (declaration.type === 'VariableDeclaration') {
-    declaration.declarations.forEach(decl => {
-      loc = decl.loc
-      var prevInit = decl.init
-      decl.init =  {
-        type: "AssignmentExpression",
-        operator: "=",
-        left: {
-          type: "MemberExpression",
-          computed: false,
-          object: { type: "Identifier", name: "exports", loc },
-          property: decl.id,
-          loc
-        },
-        right: compile(prevInit),
-        loc
-      }
-    })
-
-    return declaration
-  }
-  else {
-    return ast
-  }
+// objects {
+/// The AST for this is already appropriate
+export function Property(ast, compile) {
+  ast.shorthand = false // { a } => { a: a }
+  ast.method = false // { f() {} } => { f: function() {} }
+  ast.value = compile(ast.value)
+  return ast
 }
+// } end objects
