@@ -24,8 +24,8 @@ export function compileObjectNode(ast) {
   else {
     var out = {}
     for (var k in ast) {
-      if (k === 'range')
-        out[k] = ast[k]
+      if (k === 'loc')
+        out.loc = ast.loc
       else
         out[k] = compileNode(ast[k])
     }

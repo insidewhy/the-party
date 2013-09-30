@@ -125,8 +125,9 @@ export function ImportDeclaration(ast) {
   }
 
   ast.specifiers.forEach(specifier => {
-    var newDecl = {
+    declarations.push({
       type: "VariableDeclarator",
+      id: specifier.name || specifier.id,
       init: {
         type: "MemberExpression",
         computed: false,
@@ -134,11 +135,7 @@ export function ImportDeclaration(ast) {
         property: specifier.id,
         loc
       }
-    }
-
-    newDecl.id = specifier.name || specifier.id
-
-    declarations.push(newDecl)
+    })
   })
 
   return ret

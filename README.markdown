@@ -48,7 +48,7 @@ export function help() { return "yes!" }
 
 ## Functions
 
-### Shorter functions
+### Closure expression functions
 ```JavaScript
 function isEven(a) a % 2 // => function isEven(a) { return a % 2 }
 ```
@@ -80,7 +80,7 @@ var field = 16,
 var o = { m() { return "method" } }
 ```
 
-### Variable declaration via object expression
+### Destructuring assignment
 ```JavaScript
 var o = { x: 1, y: 2 }
 var {x, y} = o        // equivalent to var x = o.x, y = o.y;
