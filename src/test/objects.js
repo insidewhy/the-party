@@ -1,5 +1,4 @@
-module common from './inc/common'
-var expect = common.expect, compile = common.compile
+import {expect, compile} from './inc/common'
 
 describe('objects', () => {
   it('Object shorthand field notation', () => {

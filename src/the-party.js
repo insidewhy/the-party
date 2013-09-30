@@ -1,8 +1,8 @@
-module esprima from 'esprima-the-party'
+import parse from 'esprima-the-party'
 module fs from 'fs'
 module path from 'path'
 module ast from './ast'
-module escodegen from 'escodegen'
+import generate from 'escodegen'
 
 var CODEGEN_FORMAT = { indent: { style: '  ' } }
 
@@ -12,7 +12,7 @@ function parseScripts(sourcePaths, noLocs) {
 
   sourcePaths.forEach(sourcePath => {
     var contents = fs.readFileSync(sourcePath).toString()
-    asts[sourcePath] = esprima.parse(contents, {
+    asts[sourcePath] = parse(contents, {
       loc: ! noLocs,
       source: sourcePath
     })
@@ -60,8 +60,8 @@ function outputCode(compiledSources, targetDir) {
 export function compile(scripts, opts) {
   if (typeof scripts === 'string') {
     // scripts = code to be compiled
-    var compiledAst = ast.compileObjectNode(esprima.parse(scripts))
-    return escodegen.generate(compiledAst, { format: CODEGEN_FORMAT })
+    var compiledAst = ast.compileObjectNode(parse(scripts))
+    return generate(compiledAst, { format: CODEGEN_FORMAT })
   }
 
   var asts = parseScripts(scripts,
@@ -80,7 +80,7 @@ export function compile(scripts, opts) {
     var output, ast = compiled[sourcePath]
     var codeEntry = {}
     if (opts.sourceMaps) {
-      var tmp = escodegen.generate(ast, {
+      var tmp = generate(ast, {
         sourceMapWithCode: true,
         sourceMap: true, // from loc.source
         format: CODEGEN_FORMAT
@@ -89,7 +89,7 @@ export function compile(scripts, opts) {
       codeEntry.code = tmp.code
     }
     else {
-      codeEntry.code = escodegen.generate(ast)
+      codeEntry.code = generate(ast)
     }
     code[sourcePath] = codeEntry
   })
