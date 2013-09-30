@@ -7,7 +7,7 @@ The best ES6 to ES5 transpiler!
     * AMD module systems (require)
     * Non-modular systems (by concatenating modules with their dependencies into a single output file).
  * Test cases for all features (using mocha).
- * Uses esprima for parsing and escodegen for code generation, allows codebase to be small and fast (can compile itself in less than 0.2 seconds on my laptop).
+ * Uses esprima for parsing and escodegen for code generation, allows codebase to be small and fast (can compile itself in less than 0.2 seconds on a reasonably powered laptop).
  * Grunt task runner to make development a bit easier.
 
 ## Usage
