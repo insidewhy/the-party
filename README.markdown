@@ -1,10 +1,10 @@
 # the-party
 
 The best ES6 to ES5 transpiler!
-  * Support for source maps!
+  * Support for source maps (stack traces show source line numbers and columns).
   * Generated code works in:
-    * CommonJS systems (node/phantom)
-    * AMD module systems (require)
+    * CommonJS systems (node/phantom).
+    * AMD module systems (require).
     * Non-modular systems (by concatenating modules with their dependencies into a single output file).
  * Test cases for all features (using mocha).
  * Uses esprima for parsing and escodegen for code generation, allows codebase to be small and fast (can compile itself in less than 0.2 seconds on a reasonably powerful laptop).
@@ -59,6 +59,9 @@ class Animal {
     return "give me some food"
   }
 }
+
+var rebeccaTheCat = new Animal("cat", "Rebecca", "meow")
+console.log("she likes to play:", rebeccaTheCat.play())
 ```
 
 ## Functions
