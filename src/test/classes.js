@@ -14,9 +14,10 @@ describe('classes', () => {
   })
 
   it('extends', () => {
-    eval(compile('class P {}; class C extends P {}'))
+    eval(compile('class P { m() { return "t" } }; class C extends P {}'))
     var c = new C
     expect(c instanceof C).to.be.ok
     expect(c instanceof P).to.be.ok
+    expect(c.m()).to.equal("t")
   })
 })
