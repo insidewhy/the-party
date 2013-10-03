@@ -50,7 +50,7 @@ export function help() { return "yes!" }
 ```JavaScript
 class Animal {
   constructor(type, name, sound) {
-    this.sound
+    this.sound = sound
     console.log("created new", type, "called", name)
   }
 
@@ -60,8 +60,11 @@ class Animal {
   }
 }
 
-var rebeccaTheCat = new Animal("cat", "Rebecca", "meow")
-console.log("she likes to play:", rebeccaTheCat.play())
+class Cat extends Animal {
+}
+
+var rebeccaTheOtter = new Animal("otter", "Rebecca", "cute noises")
+console.log("she likes to play:", rebeccaTheOtter.play())
 ```
 
 ## Functions

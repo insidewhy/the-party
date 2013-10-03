@@ -33,6 +33,15 @@ describe('modules', () => {
     expect(exports.friend()).to.equal('yes')
   })
 
+  it('export class', () => {
+    var exports = {}
+    eval(compile('export class C { hey() { return "comfort" } }'))
+
+    var c = new exports.C
+    expect(c instanceof C).to.be.ok
+    expect(c.hey()).to.equal("comfort")
+  })
+
   it('import module', () => {
     eval(compile('module mod from "./inc/mod"'))
     expect(mod.times2(4)).to.equal(8)

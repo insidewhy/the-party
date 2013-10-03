@@ -43,7 +43,7 @@ export function ExportDeclaration(ast, compile) {
   }
   else if (declaration.type === 'ClassDeclaration') {
     // compile to VariableDeclaration then also handled by next if
-    decl = ClassDeclaration(decl, compile)
+    declaration = ClassDeclaration(declaration, compile)
   }
 
   // May also act on a converted FunctionDeclaration
@@ -98,11 +98,7 @@ export function ImportDeclaration(ast) {
 
   var requireExpression = {
     type: "CallExpression",
-    callee: {
-      type: "Identifier",
-      name: "require",
-      loc
-    },
+    callee: { type: "Identifier", name: "require", loc },
     arguments: [ ast.source ],
     loc
   }
@@ -411,10 +407,73 @@ export function ClassDeclaration(ast, compile) {
     loc
   }
 
+  if (ast.superClass) {
+    // Inject this code at the beginning of the scope that creates the class:
+    //    Class.prototype = Object.create(${superClass}.prototype, {
+    //      constructor: { value: Class }
+    //    })
+    classDefBody.push({
+      type: "ExpressionStatement",
+      expression: {
+        type: "AssignmentExpression",
+        operator: "=",
+        left: {
+          type: "MemberExpression",
+          computed: false,
+          object: { type: "Identifier", name: "Class", loc },
+          property: { type: "Identifier", name: "prototype", loc }
+        },
+        right: {
+          type: "CallExpression",
+          callee: {
+            type: "MemberExpression",
+            computed: false,
+            object: { type: "Identifier", name: "Object", loc },
+            property: { type: "Identifier", name: "create", loc }
+          },
+          arguments: [
+            {
+              type: "MemberExpression",
+              computed: false,
+              object: ast.superClass,
+              property: { type: "Identifier", name: "prototype", loc }
+            },
+            {
+              type: "ObjectExpression",
+              properties: [ {
+                type: "Property",
+                key: { type: "Identifier", name: "constructor", loc },
+                value: {
+                  type: "ObjectExpression",
+                  properties: [ {
+                    type: "Property",
+                    key: { type: "Identifier", name: "value", loc },
+                    value: { type: "Identifier", name: "Class", loc },
+                    kind: "init",
+                    method: false,
+                    shorthand: false,
+                    loc
+                  } ]
+                },
+                kind: "init",
+                method: false,
+                shorthand: false,
+                loc
+              } ],
+              loc
+            }
+          ]
+        }, // end right
+        loc
+      },
+      loc
+    })
+  }
+
   ast.body.body.forEach(clssMemb => {
     if (clssMemb.type === 'MethodDefinition') {
       if (clssMemb.key.name === 'constructor') {
-        classDefBody[0].body = clssMemb.value.body
+        classDefBody[0].body = compile(clssMemb.value.body)
         classDefBody[0].params = clssMemb.value.params
       }
       else {
@@ -445,7 +504,7 @@ export function ClassDeclaration(ast, compile) {
               property: clssMemb.key,
               loc
             },
-            right: clssMemb.value,
+            right: compile(clssMemb.value),
             loc
           },
           loc

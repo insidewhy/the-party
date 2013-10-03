@@ -12,4 +12,11 @@ describe('classes', () => {
     eval(compile('class C { friend(a) { return "friend:" +  a } }'))
     expect(new C(4).friend("baby")).to.equal("friend:baby")
   })
+
+  it('extends', () => {
+    eval(compile('class P {}; class C extends P {}'))
+    var c = new C
+    expect(c instanceof C).to.be.ok
+    expect(c instanceof P).to.be.ok
+  })
 })
