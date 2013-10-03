@@ -20,8 +20,6 @@ export function ExportDeclaration(ast, compile) {
   var declaration = ast.declaration
   var loc, ret
 
-  // TODO if (declaration.type === 'ClassDeclaration')
-
   if (declaration.type === 'FunctionDeclaration') {
     // converts function declaration to equivalent variable declaration of
     // function expression
@@ -42,6 +40,10 @@ export function ExportDeclaration(ast, compile) {
       kind: 'var',
       loc
     }
+  }
+  else if (declaration.type === 'ClassDeclaration') {
+    // compile to VariableDeclaration then also handled by next if
+    decl = ClassDeclaration(decl, compile)
   }
 
   // May also act on a converted FunctionDeclaration
@@ -364,3 +366,100 @@ export function Property(ast, compile) {
   return ast
 }
 // } end objects
+
+// classes {
+export function ClassDeclaration(ast, compile) {
+  var id = ast.id, loc = id.loc
+
+  // constructor body
+  var classDefBody = [{
+    type: "FunctionDeclaration",
+    id: { type: "Identifier", name: "Class", loc },
+    params: [],
+    defaults: [],
+    body: { type: "BlockStatement", body: [], loc },
+    rest: null,
+    generator: false,
+    expression: false,
+    loc
+  }]
+
+  var ret = {
+    type: "VariableDeclaration",
+    declarations: [{
+      type: "VariableDeclarator",
+      id,
+      init: {
+        type: "CallExpression",
+        callee: {
+          type: "FunctionExpression",
+          id: null,
+          params: [],
+          defaults: [],
+          body: { type: "BlockStatement", body: classDefBody, loc },
+          rest: null,
+          generator: false,
+          expression: false,
+          loc
+        },
+        arguments: [],
+        loc
+      },
+      loc
+    }],
+    kind: "var",
+    loc
+  }
+
+  ast.body.body.forEach(clssMemb => {
+    if (clssMemb.type === 'MethodDefinition') {
+      if (clssMemb.key.name === 'constructor') {
+        classDefBody[0].body = clssMemb.value.body
+        classDefBody[0].params = clssMemb.value.params
+      }
+      else {
+        var loc = clssMemb.key.loc
+        classDefBody.push({
+          type: "ExpressionStatement",
+          expression: {
+            type: "AssignmentExpression",
+            operator: "=",
+            left: {
+              type: "MemberExpression",
+              computed: false,
+              object: {
+                type: "MemberExpression",
+                computed: false,
+                object: {
+                  type: "Identifier",
+                  name: "Class",
+                  loc
+                },
+                property: {
+                  type: "Identifier",
+                  name: "prototype",
+                  loc
+                },
+                loc
+              },
+              property: clssMemb.key,
+              loc
+            },
+            right: clssMemb.value,
+            loc
+          },
+          loc
+        })
+      }
+    }
+  })
+
+  classDefBody.push({
+    type: "ReturnStatement",
+    argument: { type: "Identifier", name: "Class", loc },
+    loc
+  })
+
+  return ret
+}
+// } end classes

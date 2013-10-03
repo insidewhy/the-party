@@ -46,6 +46,21 @@ export var a = 16  // var a = exports.a = 16
 export function help() { return "yes!" }
 ```
 
+## Classes
+```JavaScript
+class Animal {
+  constructor(type, name, sound) {
+    this.sound
+    console.log("created new", type, "called", name)
+  }
+
+  play() {
+    console.log(this.type, "goes", this.sound)
+    return "give me some food"
+  }
+}
+```
+
 ## Functions
 
 ### Closure expression functions
