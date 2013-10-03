@@ -60,12 +60,25 @@ class Animal {
     return "give me some food"
   }
 }
+```
 
+### Child classes
+```JavaScript
 class Cat extends Animal {
 }
 
 var rebeccaTheOtter = new Animal("otter", "Rebecca", "cute noises")
 console.log("she likes to play:", rebeccaTheOtter.play())
+```
+
+### Class expressions
+```JavaScript
+var getClass(prefix) {
+  return new class { say(stuff) { console.log(prefix, stuff) } }
+}
+
+var friendConsole = getConsole("friend")
+friendConsole.say("hello")
 ```
 
 ## Functions

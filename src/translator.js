@@ -364,8 +364,9 @@ export function Property(ast, compile) {
 // } end objects
 
 // classes {
-export function ClassDeclaration(ast, compile) {
-  var id = ast.id, loc = id.loc
+export function ClassExpression(ast, compile) {
+  // TODO: hmm
+  var loc = ast.id ? ast.id.loc : ast.loc
 
   // constructor body
   var classDefBody = [{
@@ -381,29 +382,19 @@ export function ClassDeclaration(ast, compile) {
   }]
 
   var ret = {
-    type: "VariableDeclaration",
-    declarations: [{
-      type: "VariableDeclarator",
-      id,
-      init: {
-        type: "CallExpression",
-        callee: {
-          type: "FunctionExpression",
-          id: null,
-          params: [],
-          defaults: [],
-          body: { type: "BlockStatement", body: classDefBody, loc },
-          rest: null,
-          generator: false,
-          expression: false,
-          loc
-        },
-        arguments: [],
-        loc
-      },
+    type: "CallExpression",
+    callee: {
+      type: "FunctionExpression",
+      id: null,
+      params: [],
+      defaults: [],
+      body: { type: "BlockStatement", body: classDefBody, loc },
+      rest: null,
+      generator: false,
+      expression: false,
       loc
-    }],
-    kind: "var",
+    },
+    arguments: [],
     loc
   }
 
@@ -520,5 +511,20 @@ export function ClassDeclaration(ast, compile) {
   })
 
   return ret
+}
+
+export function ClassDeclaration(ast, compile) {
+  var id = ast.id, loc = ast.id.loc
+  return {
+    type: "VariableDeclaration",
+    declarations: [{
+      type: "VariableDeclarator",
+      id,
+      init: ClassExpression(ast, compile),
+      loc
+    }],
+    kind: "var",
+    loc
+  }
 }
 // } end classes

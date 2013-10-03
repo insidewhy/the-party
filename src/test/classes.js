@@ -20,4 +20,13 @@ describe('classes', () => {
     expect(c instanceof P).to.be.ok
     expect(c.m()).to.equal("t")
   })
+
+  it('class expression', () => {
+    eval(compile(
+      'var C = class { m() { return new class { m() { return "op" } } } }'))
+
+    var c = new C
+    expect(c instanceof C).to.be.ok
+    expect(c.m().m()).to.equal("op")
+  })
 })
