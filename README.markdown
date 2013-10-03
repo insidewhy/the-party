@@ -1,7 +1,8 @@
 # the-party
 
-The best ES6 to ES5 transpiler!
-  * Support for source maps (stack traces show source line numbers and columns).
+This tool takes code written in the latest version of JavaScript (EcmaScript 6) and outputs code written in the current version (EcmaScript 5) so that it can be used in all browsers from IE9+ and most non-IE browsers.
+
+  * Support for source maps, this means stack traces show line numbers and columns from the original source, not the transpiled code.
   * Generated code works in:
     * CommonJS systems (node/phantom).
     * AMD module systems (require).
