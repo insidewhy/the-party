@@ -14,15 +14,15 @@ describe('functions', () => {
   })
 
   it('arrow functions', () => {
-    eval(compile('var isEven = a => { return a % 2 === 0 }'))
-    expect(isEven(6)).to.equal(true)
-    expect(isEven(7)).to.equal(false)
+    eval(compile('var isEven = a => { return ! (a % 2) }'))
+    expect(isEven(6)).to.be.ok
+    expect(isEven(7)).to.not.be.ok
   })
 
   it('simplified arrow functions', () => {
-    eval(compile('var isEven = a => a % 2 === 0'))
-    expect(isEven(8)).to.equal(true)
-    expect(isEven(9)).to.equal(false)
+    eval(compile('var isEven = a => ! (a % 2)'))
+    expect(isEven(8)).to.be.ok
+    expect(isEven(9)).to.not.be.ok
   })
 
   it('functions with rest parameters', () => {
