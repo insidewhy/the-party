@@ -2,11 +2,11 @@
 
 This tool takes code written in the latest version of JavaScript (EcmaScript 6) and outputs code written in the current version (EcmaScript 5) so that it can be used in all browsers from IE9+ and most non-IE browsers.
 
-  * Support for source maps, this means stack traces show line numbers and columns from the original source, not the transpiled code.
-  * Generated code works in:
-    * CommonJS systems (node/phantom).
-    * AMD module systems (require).
-    * Non-modular systems (by concatenating modules with their dependencies into a single output file).
+ * Support for source maps, this means stack traces show line numbers and columns from the original source, not the transpiled code.
+ * Generated code works in:
+   * CommonJS systems (node/phantom).
+   * AMD module systems (require).
+   * Non-modular systems (by concatenating modules with their dependencies into a single output file).
  * Test cases for all features (using mocha).
  * Uses esprima for parsing and escodegen for code generation, allows codebase to be small and fast (can compile itself in less than 0.2 seconds on a reasonably powerful laptop).
  * Grunt task runner to make development a bit easier.
@@ -60,6 +60,10 @@ class Animal {
     return "give me some food"
   }
 }
+
+var rebeccaTheOtter = new Animal("otter", "Rebecca", "cute noises")
+console.log("she likes to play:", rebeccaTheOtter.play())
+console.log(rebeccaTheOtter instanceof Animal) // true
 ```
 
 ### Child classes
@@ -67,8 +71,6 @@ class Animal {
 class Cat extends Animal {
 }
 
-var rebeccaTheOtter = new Animal("otter", "Rebecca", "cute noises")
-console.log("she likes to play:", rebeccaTheOtter.play())
 ```
 
 ### Class expressions
