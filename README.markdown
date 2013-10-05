@@ -73,6 +73,11 @@ class Cat extends Animal {
     // call superclass constructor
     super("cat", name, "meow")
   }
+
+  play() {
+    // call superclass method
+    return super.play() + " then stroke my head"
+  }
 }
 
 ```

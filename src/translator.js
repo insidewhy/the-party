@@ -539,26 +539,46 @@ export function ClassDeclaration(ast, compile) {
 }
 
 export function CallExpression(ast, compile) {
-  var ctrCall = ast.callee.name === 'super'
+  var methodCall
+  if (ast.callee.object && ast.callee.object.name === 'super')
+    methodCall = ast.callee.property
 
-  // TODO: also support super.method also
-  if (ctrCall) {
+  if (methodCall || ast.callee.name === 'super') {
     var loc = ast.callee.loc
 
     if (! compile.superClass)
       throw Error("super without super class")
 
+    ast.arguments = compile(ast.arguments)
     ast.arguments.unshift({ type: "ThisExpression", loc })
     var ret = {
       type: "CallExpression",
       callee: {
         type: "MemberExpression",
         computed: false,
-        object: compile.superClass,
         property: { type: "Identifier", name: "call", loc }
       },
-      arguments: compile(ast.arguments),
+      arguments: ast.arguments,
       loc
+    }
+
+    if (methodCall) {
+      ret.callee.object = {
+        type: "MemberExpression",
+        computed: false,
+        object: {
+          type: "MemberExpression",
+          computed: false,
+          object: compile.superClass,
+          property: { type: "Identifier", name: "prototype", loc },
+          loc
+        },
+        property: methodCall,
+        loc
+      }
+    }
+    else {
+      ret.callee.object = compile.superClass
     }
 
     return ret

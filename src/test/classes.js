@@ -21,11 +21,18 @@ describe('classes', () => {
     expect(c.m()).to.equal("t")
   })
 
-  it('call superclass constructor', () => {
+  it('call constructor with super', () => {
     eval(compile('class P { constructor(y) { this.y = y + 1 } };' +
                  'class C extends P { constructor() { super(5) } }'))
     var c = new C
     expect(c.y).to.equal(6)
+  })
+
+  it('call parent method with super', () => {
+    eval(compile('class P { m(y) { return "cat" + y } };' +
+                 'class C extends P { m() { return super.m("friend") } }'))
+    var c = new C
+    expect(c.m()).to.equal("catfriend")
   })
 
   it('class expression', () => {
