@@ -6,19 +6,49 @@ import generate from 'escodegen'
 
 var CODEGEN_FORMAT = { indent: { style: '  ' } }
 
-function parseScripts(sourcePaths, noLocs) {
-  // map of script file name against ast
-  var asts = {}
+function recursiveGlob(dir, pattern) {
+  var files = []
+  fs.readdirSync(dir).forEach(child => {
+    child = path.join(dir, child)
+    if (fs.statSync(child).isDirectory())
+      files = files.concat(recursiveGlob(child, pattern))
+    else if (pattern.test(child))
+      files.push(child)
+  })
+  return files
+}
 
-  sourcePaths.forEach(sourcePath => {
+function parseScripts(sourcePaths, opts) {
+  var noLocs = (opts.dump || opts.dumpSources) && ! opts.dumpLocs
+
+  // map of script file name against ast
+  var sources = {}
+
+  var parseSourceFile = (sourcePath, dir) => {
     var contents = fs.readFileSync(sourcePath).toString()
-    asts[sourcePath] = parse(contents, {
+    var ast = parse(contents, {
       loc: ! noLocs,
       source: sourcePath
     })
+
+    sources[sourcePath] = { ast, dir }
+  }
+
+  // regexp when scanning directories
+  var sourceRe = opts.compile ? /\.es6$/ : /\.(es6|js)$/
+
+  sourcePaths.forEach(sourcePath => {
+    if (fs.statSync(sourcePath).isDirectory()) {
+      recursiveGlob(sourcePath, sourceRe).forEach(file => {
+        parseSourceFile(file, opts.compile ? null : sourcePath)
+      })
+    }
+    else {
+      parseSourceFile(sourcePath, null)
+    }
   })
 
-  return asts
+  return sources
 }
 
 function mkpath(dir) {
@@ -40,12 +70,24 @@ function mkpath(dir) {
 function outputCode(compiledSources, targetDir) {
   Object.keys(compiledSources).forEach(sourcePath => {
     var compiled = compiledSources[sourcePath]
-    var destPath = path.join(targetDir, sourcePath)
-    mkpath(path.dirname(destPath))
 
-    if (compiled.map)
-      fs.writeFileSync(destPath + '.map', compiled.map)
-    fs.writeFileSync(destPath, compiled.code)
+    // remove passed directory component from output path
+    if (compiled.sourceDir)
+      sourcePath = sourcePath.substr(compiled.sourceDir.length)
+
+    var destPath = path.join(targetDir, sourcePath)
+    destPath = destPath.replace(/\.es6$/, '.js')
+
+    if (destPath === sourcePath) {
+      console.error('Source file equals output file for', destPath, 'skipping.')
+    }
+    else {
+      mkpath(path.dirname(destPath))
+
+      if (compiled.map)
+        fs.writeFileSync(destPath + '.map', compiled.map)
+      fs.writeFileSync(destPath, compiled.code)
+    }
   })
 }
 
@@ -64,20 +106,20 @@ export function compile(scripts, opts) {
     return generate(compiledAst, { format: CODEGEN_FORMAT })
   }
 
-  var asts = parseScripts(scripts,
-                          (opts.dump || opts.dumpSources) && ! opts.dumpLocs)
+  var sources = parseScripts(scripts, opts)
 
   if (opts.dumpSources)
-    return asts
+    return sources
 
-  var compiled = ast.compile(asts)
+  var objects = ast.compile(sources)
 
   if (opts.dump)
-    return compiled
+    return objects
 
   var code = {}
-  Object.keys(compiled).forEach(sourcePath => {
-    var output, ast = compiled[sourcePath]
+  Object.keys(objects).forEach(sourcePath => {
+    var output, object = objects[sourcePath], ast = object.ast
+
     var codeEntry = {}
     if (opts.sourceMaps) {
       var tmp = generate(ast, {
@@ -91,6 +133,7 @@ export function compile(scripts, opts) {
     else {
       codeEntry.code = generate(ast)
     }
+    codeEntry.sourceDir = object.sourceDir
     code[sourcePath] = codeEntry
   })
 

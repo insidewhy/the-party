@@ -36,12 +36,8 @@ module.exports = function(grunt) {
   grunt.registerTask('buildTests', 'Compile tests', function() {
     var theparty = require('./lib/the-party')
     var cwd = process.cwd()
-    process.chdir('src/test')
 
-    var srcs = getSources('.')
-    srcs = srcs.concat(getSources('inc'))
-    theparty.compile(srcs, { output: '../../test' })
-    process.chdir(cwd)
+    theparty.compile(['src/test'], { output: 'test' })
   })
 
   grunt.registerTask('default', 'build')

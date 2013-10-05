@@ -8,7 +8,7 @@ This tool takes code written in the latest version of JavaScript (EcmaScript 6) 
    * AMD module systems (require).
    * Non-modular systems (by concatenating modules with their dependencies into a single output file).
  * Test cases for all features (using mocha).
- * Uses esprima for parsing and escodegen for code generation, allows codebase to be small and fast (can compile itself in less than 0.2 seconds on a reasonably powerful laptop).
+ * Uses esprima for parsing and escodegen for code generation, allows codebase to be small and fast (can compile itself in less than 0.5 seconds on a mid-powered laptop).
  * Grunt task runner to make development a bit easier.
 
 ## Usage
@@ -19,11 +19,33 @@ This tool takes code written in the latest version of JavaScript (EcmaScript 6) 
     Options:
 
       -h, --help          output usage information
+      -c, --compile       Compile output files into same directory as sources
       -o, --output <dir>  Output compiled JavaScript files to <dir>
       -d, --dump          Dump ASTs
       -L, --dump-locs     Include locs in dump
       -S, --dump-sources  Dump source ASTs rather than compiled ASTs
       -m, --source-maps   Generate source maps
+
+
+## Installation
+
+    npm install -g the-party
+
+## Examples
+
+Compile all files with extensions "es6" or "js" recursively reachable from the directory "source" to the directory "build":
+
+    the-party -o build source
+
+Output files have the extension "es6" replaced with "js" and the-party will issue a warning instead of overwriting a source file.
+
+Compile tiles main.js and lib.js, outputting the compiled files to the directory "build":
+
+    the-party -o build main.js lib.js
+
+Compile files to the same directories as their source files. In this case the source files must have the extension "es6" which will be replaced by "js" for the output files:
+
+    the-party -c main.es6 lib.es6 otherfile.es6
 
 # Support
 

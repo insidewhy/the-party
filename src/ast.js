@@ -35,13 +35,17 @@ export function compileObjectNode(ast) {
 
 /// Compile asts
 /// @param asts { file: ast }*
-/// @retval { file: compiled_ast }*
+/// @retval { sourcePath: { ast: <compiled ast>, sourceDir } }*
 /// @todo Load extra modules as they are imported
-export function compile(asts) {
-  var compiled = {}
-  Object.keys(asts).forEach(key => {
-    compiled[key] = compileObjectNode(asts[key])
+export function compile(sources) {
+  var objects = {}
+  Object.keys(sources).forEach(key => {
+    var source = sources[key]
+    objects[key] = {
+      sourceDir: source.dir,
+      ast: compileObjectNode(source.ast)
+    }
   })
 
-  return compiled
+  return objects
 }

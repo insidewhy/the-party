@@ -590,3 +590,12 @@ export function CallExpression(ast, compile) {
   }
 }
 // } end classes
+
+// esprima bug work-around {
+export function Literal(ast) {
+  if (ast.value === {})
+    ast.value = raw
+  return ast
+}
+
+// }
