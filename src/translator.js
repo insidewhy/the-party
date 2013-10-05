@@ -398,7 +398,13 @@ export function ClassExpression(ast, compile) {
     loc
   }
 
-  if (ast.superClass) {
+  var superClass = ast.superClass, bakSuperclass
+  if (superClass) {
+    // store superclass as property of compile function for access by
+    // other AST translator functions (for use in super)
+    bakSuperclass = compile.superClass
+    compile.superClass = superClass
+
     // Inject this code at the beginning of the scope that creates the class:
     //    Class.prototype = Object.create(${superClass}.prototype, {
     //      constructor: { value: Class }
@@ -426,7 +432,7 @@ export function ClassExpression(ast, compile) {
             {
               type: "MemberExpression",
               computed: false,
-              object: ast.superClass,
+              object: superClass,
               property: { type: "Identifier", name: "prototype", loc }
             },
             {
@@ -504,6 +510,10 @@ export function ClassExpression(ast, compile) {
     }
   })
 
+  // restore backup now that methods have processed
+  if (superClass)
+    compile.superClass = bakSuperclass
+
   classDefBody.push({
     type: "ReturnStatement",
     argument: { type: "Identifier", name: "Class", loc },
@@ -525,6 +535,38 @@ export function ClassDeclaration(ast, compile) {
     }],
     kind: "var",
     loc
+  }
+}
+
+export function CallExpression(ast, compile) {
+  var ctrCall = ast.callee.name === 'super'
+
+  // TODO: also support super.method also
+  if (ctrCall) {
+    var loc = ast.callee.loc
+
+    if (! compile.superClass)
+      throw Error("super without super class")
+
+    ast.arguments.unshift({ type: "ThisExpression", loc })
+    var ret = {
+      type: "CallExpression",
+      callee: {
+        type: "MemberExpression",
+        computed: false,
+        object: compile.superClass,
+        property: { type: "Identifier", name: "call", loc }
+      },
+      arguments: compile(ast.arguments),
+      loc
+    }
+
+    return ret
+  }
+  else {
+    ast.arguments = compile(ast.arguments)
+    // ast.callee = compile(ast.callee)
+    return ast
   }
 }
 // } end classes

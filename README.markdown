@@ -69,6 +69,10 @@ console.log(rebeccaTheOtter instanceof Animal) // true
 ### Child classes
 ```JavaScript
 class Cat extends Animal {
+  constructor(name) {
+    // call superclass constructor
+    super("cat", name, "meow")
+  }
 }
 
 ```
