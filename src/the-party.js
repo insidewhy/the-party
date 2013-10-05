@@ -111,7 +111,7 @@ export function compile(scripts, opts) {
   if (opts.dumpSources)
     return sources
 
-  var objects = ast.compile(sources)
+  var objects = ast.compile(sources, opts)
 
   if (opts.dump)
     return objects

@@ -1,6 +1,7 @@
 module translator from './translator'
 
 // Tree walking stuff
+// The compileNode function also stores the current context as attributes
 function compileNode(node) {
   if (node instanceof Array) {
     var out = []
@@ -37,7 +38,9 @@ export function compileObjectNode(ast) {
 /// @param asts { file: ast }*
 /// @retval { sourcePath: { ast: <compiled ast>, sourceDir } }*
 /// @todo Load extra modules as they are imported
-export function compile(sources) {
+export function compile(sources, opts) {
+  compileNode.options = opts
+
   var objects = {}
   Object.keys(sources).forEach(key => {
     var source = sources[key]
