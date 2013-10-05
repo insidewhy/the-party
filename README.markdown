@@ -96,13 +96,13 @@ friendConsole.say("hello")
 
 ### Closure expression functions
 ```JavaScript
-function isEven(a) a % 2 // => function isEven(a) { return a % 2 }
+function isOdd(a) a % 2 // => function isOdd(a) { return a % 2 }
 ```
 
 ### Arrow functions
 ```JavaScript
 var happyPrint = a => { console.log('totoro', a) }
-var isEven = a => a % 2
+var isOdd = a => a % 2
 ```
 
 ### Rest parameters
