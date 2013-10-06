@@ -1,4 +1,7 @@
 /node_modules
 .*.swp
 /lib/*.map
-/test
+/test/*.js*
+/test/inc
+/test/web/*.js*
+.*.swo
