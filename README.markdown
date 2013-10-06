@@ -20,12 +20,12 @@ This tool takes code written in the latest version of JavaScript (EcmaScript 6) 
 
       -h, --help          output usage information
       -c, --compile       Compile output files into same directory as sources
+      -m, --source-maps   Generate source maps
       -o, --output <dir>  Output compiled JavaScript files to <dir>
       -d, --dump          Dump ASTs
+      -R, --dont-recurse  Do not recurse into directory arguments
       -L, --dump-locs     Include locs in dump
       -S, --dump-sources  Dump source ASTs rather than compiled ASTs
-      -m, --source-maps   Generate source maps
-
 
 ## Installation
 

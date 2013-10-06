@@ -6,13 +6,18 @@ import generate from 'escodegen'
 
 var CODEGEN_FORMAT = { indent: { style: '  ' } }
 
-function recursiveGlob(dir, pattern) {
+var readdirFiles = dir =>
+  fs.readdirSync(dir)
+    .map(f => path.join(dir, f))
+    .filter(f => ! fs.statSync(f).isDirectory())
+
+function recursiveReaddir(dir) {
   var files = []
   fs.readdirSync(dir).forEach(child => {
     child = path.join(dir, child)
     if (fs.statSync(child).isDirectory())
-      files = files.concat(recursiveGlob(child, pattern))
-    else if (pattern.test(child))
+      files = files.concat(recursiveReaddir(child))
+    else
       files.push(child)
   })
   return files
@@ -39,8 +44,13 @@ function parseScripts(sourcePaths, opts) {
 
   sourcePaths.forEach(sourcePath => {
     if (fs.statSync(sourcePath).isDirectory()) {
-      recursiveGlob(sourcePath, sourceRe).forEach(file => {
-        parseSourceFile(file, opts.compile ? null : sourcePath)
+      var dirFiles = opts.dontRecurse ?
+        readdirFiles(sourcePath) :
+        recursiveReaddir(sourcePath)
+
+      dirFiles.forEach(file => {
+        if (sourceRe.test(file))
+          parseSourceFile(file, opts.compile ? null : sourcePath)
       })
     }
     else {

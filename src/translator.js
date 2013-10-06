@@ -597,5 +597,4 @@ export function Literal(ast) {
     ast.value = raw
   return ast
 }
-
 // }
