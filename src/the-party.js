@@ -100,6 +100,14 @@ function outputCode(compiledSources, targetDir) {
 ///
 /// @retval Data of the form { sourcePath: code } where code can be an AST (if dumpSources or dump was set) or an object of the form { map, code }
 export function compile(scripts, opts) {
+  // output overrides compile
+  if (opts && opts.compile) {
+    if (opts.output)
+      delete opts.compile
+    else
+      opts.output = '.'
+  }
+
   if (typeof scripts === 'string') {
     // scripts = code to be compiled
     var compiledAst = ast.compileObjectNode(parse(scripts))
