@@ -314,7 +314,7 @@ var functionHelper = (ast, compile) => {
     var existing = ast.body, loc = existing.loc
     ast.body = {
       type: "BlockStatement",
-      body: [{ type: "ReturnStatement", argument: existing, loc }],
+      body: [{ type: "ReturnStatement", argument: compile(existing), loc }],
       loc
     }
     ast.expression = false
