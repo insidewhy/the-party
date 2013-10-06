@@ -1,6 +1,3 @@
-var readDir = require('fs').readdirSync,
-    path    = require('path')
-
 module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-mocha-test')
 
