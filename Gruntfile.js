@@ -48,22 +48,23 @@ module.exports = function(grunt) {
       var http = require('http'),
           fs   = require('fs')
 
-      var source = fs.readFileSync('src/code.js'),
-          sourceMap = fs.readFileSync('code.js.map'),
-          compiled = fs.readFileSync('code.js'),
-          indexPage = fs.readFileSync('index.html')
+      var files = {},
+          readFile = function(file) { files[file] = fs.readFileSync(file) }
+
+      readFile('src/code.js')
+      readFile('code.js.map')
+      readFile('code.js')
+      readFile('index.html')
+      files[''] = files['index.html']
 
       var done = this.async()
 
       http.createServer(function (req, res) {
-        var forSource = req.url === '/src/code.js',
-            forCompiled = false,
+        var forCompiled = req.url === '/code.js',
             header = {}
 
-        if (! forSource)
-          forCompiled = req.url === '/code.js'
 
-        header['Content-Type'] = (forSource || forCompiled) ?
+        header['Content-Type'] = /\.js$/.test(req.url) ?
           'text/javascript' : 'text/html'
 
         if (forCompiled)
@@ -71,17 +72,11 @@ module.exports = function(grunt) {
 
         res.writeHead(200, header);
 
-        if (forSource)
-          res.end(source)
-        else if (forCompiled)
-          res.end(compiled)
-        else if (req.url === '/code.js.map')
-          res.end(sourceMap)
-        else
-          res.end(indexPage)
+        res.end(files[req.url.substr(1)])
       }).listen(9674);
     }
     catch (e) {
+      console.error(e)
     }
     process.chdir(cwd)
   })
