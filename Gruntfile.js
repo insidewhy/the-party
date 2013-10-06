@@ -59,7 +59,6 @@ module.exports = function(grunt) {
       var done = this.async()
 
       http.createServer(function (req, res) {
-        console.log(req.url)
         var forSource = req.url === '/src/code.js',
             forCompiled = false,
             header = {}
