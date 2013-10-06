@@ -585,7 +585,7 @@ export function CallExpression(ast, compile) {
   }
   else {
     ast.arguments = compile(ast.arguments)
-    // ast.callee = compile(ast.callee)
+    ast.callee = compile(ast.callee)
     return ast
   }
 }
