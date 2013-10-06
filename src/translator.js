@@ -544,7 +544,7 @@ export function CallExpression(ast, compile) {
     methodCall = ast.callee.property
 
   if (methodCall || ast.callee.name === 'super') {
-    var loc = ast.callee.loc
+    var loc = methodCall ? ast.callee.object.loc : ast.callee.loc
 
     if (! compile.superClass)
       throw Error("super without super class")
