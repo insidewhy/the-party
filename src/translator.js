@@ -365,13 +365,20 @@ export function Property(ast, compile) {
 
 // classes {
 export function ClassExpression(ast, compile) {
-  // TODO: hmm
-  var loc = ast.id ? ast.id.loc : ast.loc
+  var id = ast.id, loc
+  if (! id) {
+    var loc = ast.loc
+    // TODO: hmm
+    id = { type: "Identifier", name: "Class", loc }
+  }
+  else {
+    var loc = id.loc
+  }
 
   // constructor body
   var classDefBody = [{
     type: "FunctionDeclaration",
-    id: { type: "Identifier", name: "Class", loc },
+    id,
     params: [],
     defaults: [],
     body: { type: "BlockStatement", body: [], loc },
@@ -417,7 +424,7 @@ export function ClassExpression(ast, compile) {
         left: {
           type: "MemberExpression",
           computed: false,
-          object: { type: "Identifier", name: "Class", loc },
+          object: id,
           property: { type: "Identifier", name: "prototype", loc }
         },
         right: {
@@ -445,7 +452,7 @@ export function ClassExpression(ast, compile) {
                   properties: [ {
                     type: "Property",
                     key: { type: "Identifier", name: "value", loc },
-                    value: { type: "Identifier", name: "Class", loc },
+                    value: id,
                     kind: "init",
                     method: false,
                     shorthand: false,
@@ -486,11 +493,7 @@ export function ClassExpression(ast, compile) {
               object: {
                 type: "MemberExpression",
                 computed: false,
-                object: {
-                  type: "Identifier",
-                  name: "Class",
-                  loc
-                },
+                object: id,
                 property: {
                   type: "Identifier",
                   name: "prototype",
@@ -516,7 +519,7 @@ export function ClassExpression(ast, compile) {
 
   classDefBody.push({
     type: "ReturnStatement",
-    argument: { type: "Identifier", name: "Class", loc },
+    argument: id,
     loc
   })
 

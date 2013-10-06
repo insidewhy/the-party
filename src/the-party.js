@@ -103,7 +103,7 @@ function outputCode(compiledSources, targetDir) {
 
 /// Compiles scripts (or script data)
 /// @param scripts This can be an array of form { path: ast } or a string containing ES6 code.
-/// @param An object containing the following options:
+/// @param opts An object containing the following options:
 //      dump: If set then the return object will contain AST dumps of the compled code as the values instead of the code as string
 //      dumpSources: Like dump but the values will be ASTs of the source objects.
 //      dumpLocs: When dump or dumpSources is set then location data is removed from the AST unless this parameter is used.
