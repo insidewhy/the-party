@@ -23,7 +23,7 @@ function recursiveReaddir(dir) {
   return files
 }
 
-function parseScripts(sourcePaths, opts) {
+function parseSourceFiles(sourcePaths, opts) {
   var noLocs = (opts.dump || opts.dumpSources) && ! opts.dumpLocs
 
   // map of script file name against ast
@@ -50,7 +50,7 @@ function parseScripts(sourcePaths, opts) {
 
       dirFiles.forEach(file => {
         if (sourceRe.test(file))
-          parseSourceFile(file, opts.compile ? null : sourcePath)
+          parseSourceFile(file, sourcePath)
       })
     }
     else {
@@ -75,28 +75,23 @@ function mkpath(dir) {
 }
 
 /// Output many code files to the given output directory.
-/// @param compiledSources Object of form { sourcePath: { code, map } }
+/// @param objects Object of form { sourcePath: { code, map } }
 /// @param targetDir Directory that will hold output files.
-function outputCode(compiledSources, targetDir) {
-  Object.keys(compiledSources).forEach(sourcePath => {
-    var compiled = compiledSources[sourcePath]
+function outputCode(objects, targetDir) {
+  Object.keys(objects).forEach(objectModule => {
+    var object = objects[objectModule]
 
-    // remove passed directory component from output path
-    if (compiled.sourceDir)
-      sourcePath = sourcePath.substr(compiled.sourceDir.length)
+    var destPath = path.join(targetDir, objectModule + ".js")
 
-    var destPath = path.join(targetDir, sourcePath)
-    destPath = destPath.replace(/\.es6$/, '.js')
-
-    if (destPath === sourcePath) {
+    if (destPath === object.sourcePath) {
       console.error('Source file equals output file for', destPath, 'skipping.')
     }
     else {
       mkpath(path.dirname(destPath))
 
-      if (compiled.map)
-        fs.writeFileSync(destPath + '.map', compiled.map)
-      fs.writeFileSync(destPath, compiled.code)
+      if (object.map)
+        fs.writeFileSync(destPath + '.map', object.map)
+      fs.writeFileSync(destPath, object.code)
     }
   })
 }
@@ -124,19 +119,19 @@ export function compile(scripts, opts) {
     return generate(compiledAst, { format: CODEGEN_FORMAT })
   }
 
-  var sources = parseScripts(scripts, opts)
+  var sources = parseSourceFiles(scripts, opts)
 
   if (opts.dumpSources)
     return sources
 
-  var objects = ast.compile(sources, opts)
+  var objects = compileAsts(sources, opts)
 
   if (opts.dump)
     return objects
 
   var code = {}
-  Object.keys(objects).forEach(sourcePath => {
-    var output, object = objects[sourcePath], ast = object.ast
+  Object.keys(objects).forEach(objectModule => {
+    var output, object = objects[objectModule], ast = object.ast
 
     var codeEntry = {}
     if (opts.sourceMaps) {
@@ -152,11 +147,70 @@ export function compile(scripts, opts) {
       codeEntry.code = generate(ast)
     }
     codeEntry.sourceDir = object.sourceDir
-    code[sourcePath] = codeEntry
+    code[objectModule] = codeEntry
   })
 
   if (opts.output)
     outputCode(code, opts.output)
 
   return code
+}
+
+/// Compile asts
+/// @param sources { file: {ast, dir} }*
+/// @param objects Optional existing objects hash in which to store
+///                objects created from sources
+/// @retval { sourcePath: { ast, sourceDir, requires: [require]*, deps: [dep]* } }*
+/// @todo Load extra modules as they are imported
+function compileAsts(sources, opts, objects) {
+  if (! objects)
+    objects = {}
+
+  Object.keys(sources).forEach(sourcePath => {
+    var source = sources[sourcePath]
+    var objectModule = sourcePath.replace(/\.(js|es6)/, '')
+
+    var sourceDir = source.dir
+    if (sourceDir && ! opts.compile)
+      // remove passed directory component from output path
+      objectModule = objectModule.substr(sourceDir.length + 1)
+
+    var object = objects[objectModule] = { sourceDir, sourcePath, requires: [] }
+
+    // store this property for translators to set dependencies
+    object.ast = ast.compileObject(object, source.ast)
+    object.deps = object.requires.map(req => resolveModule(objectModule, req))
+  })
+
+  Object.keys(objects).forEach(objectModule => {
+    objects[objectModule].deps.forEach(dep => {
+      // TODO: if dep isn't in objects than add source file
+    })
+  })
+
+  return objects
+}
+
+function baseModule(mod) {
+  if (mod === '')
+    return '..'
+
+  var lastSlash = mod.lastIndexOf('/')
+  return lastSlash === -1 ?  '' : mod.substr(0, lastSlash)
+}
+
+function resolveModule(current, mod) {
+  var ret = baseModule(current)
+
+  mod.split('/').forEach(function (component) {
+    if (component == '..') {
+      ret = baseModule(ret)
+    }
+    else if (component !== '.') {
+      if (ret.length)
+        ret += '/'
+      ret += component
+    }
+  })
+  return ret
 }

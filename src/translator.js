@@ -73,7 +73,16 @@ export function ExportDeclaration(ast, compile) {
   }
 }
 
-export function ModuleDeclaration(ast) {
+function addRequire(requires, path) {
+  // Ignore 'blah' dependencies (from node_modules etc.)
+  if (path[0] === '.')
+    requires.push(path)
+}
+
+export function ModuleDeclaration(ast, compile) {
+  if (compile.object)
+    addRequire(compile.object.requires, ast.source.value)
+
   var loc = ast.loc
   return {
     type: "VariableDeclaration",
@@ -93,7 +102,10 @@ export function ModuleDeclaration(ast) {
   }
 }
 
-export function ImportDeclaration(ast) {
+export function ImportDeclaration(ast, compile) {
+  if (compile.object)
+    addRequire(compile.object.requires, ast.source.value)
+
   var loc = ast.loc
 
   var requireExpression = {
