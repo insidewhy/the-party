@@ -1,10 +1,11 @@
-import compile from './the-party'
+import {compile, CompileError} from './the-party'
 module opts from 'commander'
 
 opts
   .option('-c, --compile', 'Compile output files into same directory as sources')
   .option('-m, --source-maps', 'Generate source maps')
   .option('-o, --output <dir>', 'Output compiled JavaScript files to <dir>')
+  .option('-O, --output-file <file>', 'Compile input files with dependencies into <file>')
   .option('-d, --dump', 'Dump ASTs')
   .option('-R, --dont-recurse', 'Do not recurse into directory arguments')
   .option('-L, --dump-locs', 'Include locs in dump')
@@ -13,7 +14,19 @@ opts
 export function main(args) {
   opts.parse(args)
 
-  var ret = compile(opts.args, opts)
+  try {
+    var ret = compile(opts.args, opts)
+  }
+  catch (e) {
+    if (e instanceof CompileError) {
+      console.error("error:", e.message)
+      process.exit(1)
+    }
+    else {
+      throw e
+    }
+  }
+
   if (opts.dump || opts.dumpSources)
     console.log(JSON.stringify(ret, null, 2))
 }

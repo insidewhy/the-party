@@ -5,7 +5,7 @@
   "author": {
     "name": "James Pike"
   },
-  "version": "0.8.1",
+  "version": "0.8.2",
   "dependencies": {
     "esprima-the-party": "1.1.0-dev-harmony",
     "escodegen": "0.0.27",

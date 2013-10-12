@@ -4,6 +4,13 @@ module path from 'path'
 module ast from './ast'
 import generate from 'escodegen'
 
+export class CompileError extends Error {
+  constructor(message) {
+    this.name = 'CompileError'
+    this.message = message
+  }
+}
+
 var CODEGEN_FORMAT = { indent: { style: '  ' } }
 
 var readdirFiles = dir =>
@@ -23,38 +30,50 @@ function recursiveReaddir(dir) {
   return files
 }
 
-function parseSourceFiles(sourcePaths, opts) {
-  var noLocs = (opts.dump || opts.dumpSources) && ! opts.dumpLocs
+/// Compile source file into ast
+/// @param sourcePath Where to find source file.
+/// @param opts Compilation options
+/// @retval AST
+function parseSourceFile(sourcePath, opts) {
+  var contents = fs.readFileSync(sourcePath).toString()
+  var ast = parse(contents, {
+    loc: ! opts.withoutLocs,
+    source: sourcePath
+  })
 
+  return ast
+}
+
+function argumentsToSources(args, opts) {
   // map of script file name against ast
-  var sources = {}
-
-  var parseSourceFile = (sourcePath, dir) => {
-    var contents = fs.readFileSync(sourcePath).toString()
-    var ast = parse(contents, {
-      loc: ! noLocs,
-      source: sourcePath
-    })
-
-    sources[sourcePath] = { ast, dir }
-  }
+  var sources = []
 
   // regexp when scanning directories
   var sourceRe = opts.compile ? /\.es6$/ : /\.(es6|js)$/
 
-  sourcePaths.forEach(sourcePath => {
-    if (fs.statSync(sourcePath).isDirectory()) {
+  args.forEach(arg => {
+    if (fs.statSync(arg).isDirectory()) {
+      // arg is directory containing source paths
       var dirFiles = opts.dontRecurse ?
-        readdirFiles(sourcePath) :
-        recursiveReaddir(sourcePath)
+        readdirFiles(arg) :
+        recursiveReaddir(arg)
 
-      dirFiles.forEach(file => {
-        if (sourceRe.test(file))
-          parseSourceFile(file, sourcePath)
+      dirFiles.forEach(sourcePath => {
+        if (sourceRe.test(sourcePath)) {
+          sources.push({
+            path: sourcePath,
+            ast: parseSourceFile(sourcePath, opts),
+            dirArg: arg
+          })
+        }
       })
     }
     else {
-      parseSourceFile(sourcePath, null)
+      // arg is path to source file
+      sources.push({
+        path: arg,
+        ast: parseSourceFile(arg, opts)
+      })
     }
   })
 
@@ -77,7 +96,7 @@ function mkpath(dir) {
 /// Output many code files to the given output directory.
 /// @param objects Object of form { sourcePath: { code, map } }
 /// @param targetDir Directory that will hold output files.
-function outputCode(objects, targetDir) {
+function outputObjects(objects, targetDir) {
   Object.keys(objects).forEach(objectModule => {
     var object = objects[objectModule]
 
@@ -96,17 +115,20 @@ function outputCode(objects, targetDir) {
   })
 }
 
-/// Compiles scripts (or script data)
-/// @param scripts This can be an array of form { path: ast } or a string containing ES6 code.
+/// Compiles scripts/directories (or script data)
+/// @param arg This can be an array of form { path: ast } or a string containing ES6 code.
 /// @param opts An object containing the following options:
 //      dump: If set then the return object will contain AST dumps of the compled code as the values instead of the code as string
 //      dumpSources: Like dump but the values will be ASTs of the source objects.
 //      dumpLocs: When dump or dumpSources is set then location data is removed from the AST unless this parameter is used.
 ///
 /// @retval Data of the form { sourcePath: code } where code can be an AST (if dumpSources or dump was set) or an object of the form { map, code }
-export function compile(scripts, opts) {
+export function compile(arg, opts) {
   // output overrides compile
-  if (opts && opts.compile) {
+  if (! opts)
+    opts = {}
+
+  if (opts.compile) {
     if (opts.output) {
       console.error("--compile option used with --output, ignoring --compile")
       delete opts.compile
@@ -116,80 +138,108 @@ export function compile(scripts, opts) {
     }
   }
 
-  if (typeof scripts === 'string') {
-    // scripts = code to be compiled
-    var compiledAst = ast.compileObjectNode(parse(scripts))
+  if (opts.output && opts.outputFile)
+    throw new CompileError("--output and --output-file options conflict")
+
+  opts.withoutLocs = (opts.dump || opts.dumpSources) && ! opts.dumpLocs
+
+  if (typeof arg === 'string') {
+    // arg = code to be compiled
+    var compiledAst = ast.compileObjectNode(parse(arg))
     return generate(compiledAst, { format: CODEGEN_FORMAT })
   }
 
-  var sources = parseSourceFiles(scripts, opts)
+  var sources = argumentsToSources(arg, opts)
 
   if (opts.dumpSources)
     return sources
 
-  var objects = compileAsts(sources, opts)
+  var objects = compileSources(sources, opts)
 
   if (opts.dump)
     return objects
 
-  var code = {}
   Object.keys(objects).forEach(objectModule => {
     var output, object = objects[objectModule], ast = object.ast
 
-    var codeEntry = {}
     if (opts.sourceMaps) {
       var tmp = generate(ast, {
         sourceMapWithCode: true,
         sourceMap: true, // from loc.source
         format: CODEGEN_FORMAT
       })
-      codeEntry.map = tmp.map
-      codeEntry.code = tmp.code
+      object.map = tmp.map
+      object.code = tmp.code
     }
     else {
-      codeEntry.code = generate(ast)
+      object.code = generate(ast)
     }
-    codeEntry.sourceDir = object.sourceDir
-    code[objectModule] = codeEntry
   })
 
   if (opts.output)
-    outputCode(code, opts.output)
+    outputObjects(objects, opts.output)
 
-  return code
+  return objects
 }
 
 /// Compile asts
-/// @param sources { file: {ast, dir} }*
+/// @param sources [ { { path, ast, dir} }* ]
 /// @param objects Optional existing objects hash in which to store
 ///                objects created from sources
-/// @retval { sourcePath: { ast, sourceDir, requires: [require]*, deps: [dep]* } }*
+/// @retval { sourcePath: { ast, dirArg, requires: [require]*, deps: [dep]* } }*
 /// @todo Load extra modules as they are imported
-function compileAsts(sources, opts, objects) {
+function compileSources(sources, opts, objects) {
   if (! objects)
     objects = {}
 
-  Object.keys(sources).forEach(sourcePath => {
-    var source = sources[sourcePath]
-    var objectModule = sourcePath.replace(/\.(js|es6)/, '')
-
-    var sourceDir = source.dir
-    if (sourceDir && ! opts.compile)
-      // remove passed directory component from output path
-      objectModule = objectModule.substr(sourceDir.length + 1)
-
-    var object = objects[objectModule] = { sourceDir, sourcePath, requires: [] }
+  /// Compile AST and put result in objects[objectModule]
+  var compileSource = (objectModule, source) => {
+    var object = objects[objectModule] = {
+      dirArg: source.dirArg,
+      sourcePath: source.path,
+      requires: []
+    }
 
     // store this property for translators to set dependencies
     object.ast = ast.compileObject(object, source.ast)
     object.deps = object.requires.map(req => resolveModule(objectModule, req))
+  }
+
+  sources.forEach(source => {
+    var sourcePath = source.path
+    var objectModule = sourcePath.replace(/\.(js|es6)/, '')
+
+    var dirArg = source.dirArg
+    if (dirArg && ! opts.compile)
+      // remove passed directory component from output path
+      objectModule = objectModule.substr(dirArg.length + 1)
+
+    compileSource(objectModule, source)
   })
 
-  Object.keys(objects).forEach(objectModule => {
-    objects[objectModule].deps.forEach(dep => {
-      // TODO: if dep isn't in objects than add source file
+  // Resolve file path of depModule according to path information stored
+  // in object.
+  var resolveDep = (depModule, object) => {
+  }
+
+  if (opts.outputFile) {
+    // then also parse and generate code for dependencies
+    Object.keys(objects).forEach(objectModule => {
+      var object = objects[objectModule]
+      object.deps.forEach(depModule => {
+        // TODO:
+        // if (dep isn't in objects) {
+        //   var path = resolveDepPath(depModule, object)
+        //   var depSource = {
+        //     path,
+        //     ast: parseSourceFile(depPath, opts)
+        //   }
+        //   compileSource(depModule, depSource)
+        // }
+      })
+      // TODO: transitive dependencies
     })
-  })
+  }
 
   return objects
 }
