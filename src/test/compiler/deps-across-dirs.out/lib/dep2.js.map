@@ -1,0 +1,1 @@
+{"version":3,"sources":["src/test/compiler/deps-across-dirs/lib/dep2.js"],"names":["dep3","require","dep2"],"mappings":"AAAA,IAAOA,IAAP,GAAAC,OAAA,CAAiB,QAAjB;AACA,IAAIC,IAAJ"}

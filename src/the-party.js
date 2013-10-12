@@ -107,10 +107,13 @@ function outputCode(objects, targetDir) {
 export function compile(scripts, opts) {
   // output overrides compile
   if (opts && opts.compile) {
-    if (opts.output)
+    if (opts.output) {
+      console.error("--compile option used with --output, ignoring --compile")
       delete opts.compile
-    else
+    }
+    else {
       opts.output = '.'
+    }
   }
 
   if (typeof scripts === 'string') {
