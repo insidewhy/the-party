@@ -34,19 +34,44 @@ var exec = (commands, done) => {
 }
 
 var output = path => 'test/compiler/' + path
-var o = path => ' -o ' + output(path) + ' '
 var arg = path => 'src/test/compiler/' + path
 
 describe('compiler', () => {
   it('Compiles with maps to output directory (-m and -o arguments)', done => {
-    var test   = 'deps-across-dirs',
+    var test   = 'maps-and-output',
         outDir = output(test),
-        inDir  = arg(test)
+        inDir  = arg('deps-across-dirs')
     exec([
       'rm -rf ' + outDir,
-      COMPILER + ' -m ' + o(test) + inDir,
+      COMPILER + ' -mo ' + outDir + ' ' + inDir,
       'diff -r ' + outDir + ' ' + inDir + '.out'
     ], done)
+  })
+
+  it('Compiles to same directory with maps (-c and -m arguments)', done => {
+    var test       = 'compile-in-tree',
+        outDir     = output(test),
+        inDir      = arg(test)
+
+    exec([
+      'rm -rf ' + outDir,
+      'cp -r ' + inDir + ' ' + outDir, // copy source
+      COMPILER + ' -cm ' + outDir,
+      'diff -r ' + outDir + ' ' + inDir + '.out'
+    ], done)
+  })
+
+  it('Concatenates dependencies with -O argument', done => {
+    var test    = 'concatenate-deps.js',
+        outFile = output(test),
+        inDir   = arg('deps-across-dirs')
+
+    exec([
+      'rm -f ' + outFile,
+      COMPILER + ' -mO ' + outFile + inDir,
+      // TODO: 'diff ' + outFile + ' ' + inDir + '.js'
+    ], done)
+
   })
 })
 
