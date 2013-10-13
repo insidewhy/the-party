@@ -15,7 +15,7 @@ export class JSObjects {
 
   _parseSource(objectModule, source) {
     var object = this.hash[objectModule] = {
-      dirArg: source.dirArg,
+      baseDir: source.baseDir,
       sourcePath: source.path,
       requires: []
     }
@@ -28,18 +28,18 @@ export class JSObjects {
 
   /// Compile asts
   /// @param sources [ { { path, ast, dir} }* ]
-  /// @retval { sourcePath: { ast, dirArg, requires: [require]*, deps: [dep]* } }*
+  /// @retval { sourcePath: { ast, baseDir, requires: [require]*, deps: [dep]* } }*
   /// @todo Load extra modules as they are imported
-  parseSources(sources) {
+  compileSources(sources) {
     /// Compile AST and put result in this.hash[objectModule]
     sources.forEach(source => {
       var sourcePath = source.path
       var objectModule = sourcePath.replace(/\.(js|es6)/, '')
 
-      var dirArg = source.dirArg
-      if (dirArg && ! this.opts.compile)
+      var baseDir = source.baseDir
+      if (baseDir !== '.')
         // remove passed directory component from output path
-        objectModule = objectModule.substr(dirArg.length + 1)
+        objectModule = objectModule.substr(baseDir.length + 1)
 
       this._parseSource(objectModule, source)
     })
@@ -48,37 +48,35 @@ export class JSObjects {
   /// Add objects to this.hash for all unresolved dependencies and
   /// return an array of the corresponding newly added objectModule entries
   /// in this.hash.
-  getUnresolvedDeps() {
+  compileUnresolvedDeps() {
     var ret = []
     // then also parse and generate code for dependencies
     Object.keys(this.hash).forEach(objectModule => {
       var object = this.hash[objectModule]
       object.deps.forEach(depModule => {
-        // TODO:
-        // if (dep isn't in this.hash) {
-        //   var path = resolveDepPath(depModule, object)
-        //   var depSource = {
-        //     path,
-        //     ast: parseSourceFile(depPath, this.opts)
-        //   }
-        //   this._parseSource(depModule, depSource)
-        //   ret.push(depModule)
-        // }
-      })
+        if (! (depModule in this.hash)) {
+          var path = resolveDepPath(depModule, object)
+          if (! path)
+            throw Error("Could not find dependency module " + depModule)
 
-    return []
-      // TODO: transitive dependencies
+          this._parseSource(depModule, {
+            path,
+            ast: parseSourceFile(path, this.opts),
+            baseDir: object.baseDir
+          })
+          ret.push(depModule)
+        }
+      })
     })
+
+    return ret
   }
 
   /// Populates map/code members of all objects in this.hash
   /// @param modules Optional modules override, if not given all current
   ///                modules are compiled.
-  buildSourceCodeFromAsts(modules) {
-    if (modules === undefined)
-      modules = Object.keys(this.hash)
-
-    modules.forEach(objectModule => {
+  buildSourceCodeFromAsts() {
+    Object.keys(this.hash).forEach(objectModule => {
       var output, object = this.hash[objectModule], ast = object.ast
 
       if (this.opts.sourceMaps) {
@@ -158,4 +156,13 @@ function mkpath(dir) {
 // Resolve file path of depModule according to path information stored
 // in object.
 function resolveDepPath(depModule, object) {
+  var base = path.join(object.baseDir, depModule)
+  var test = file =>
+    fs.existsSync(file) && fs.statSync(file).isFile() ? file : null
+
+  var file = test(base + ".es6")
+  if (file)
+    return file
+  else
+    return test(base + ".js")
 }

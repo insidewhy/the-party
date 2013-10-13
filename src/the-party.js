@@ -35,8 +35,11 @@ export function compile(arg, opts) {
     }
   }
 
-  if (opts.output && opts.outputFile)
-    throw new CompileError("--output and --output-file options conflict")
+  if (opts.outputFile) {
+    if (opts.output)
+      throw new CompileError("--output and --output-file options conflict")
+    opts.dependencies = true
+  }
 
   opts.withoutLocs = (opts.dump || opts.dumpSources) && ! opts.dumpLocs
 
@@ -57,14 +60,19 @@ export function compile(arg, opts) {
     return sources
 
   var objects = new JSObjects(opts)
-  objects.parseSources(sources)
+  objects.compileSources(sources)
 
-  if (opts.outputFile) {
-    // for (;;) {
-    var unresolvedDeps = objects.getUnresolvedDeps()
-    //   if (unresolvedDeps.length === 0) break
-    //  objects.buildSourceCodeFromAsts(unresolvedDeps)
-    // }
+  if (opts.dependencies) {
+    try {
+      for (;;) {
+        var newModules = objects.compileUnresolvedDeps()
+        if (newModules.length === 0)
+          break
+      }
+    }
+    catch (e) {
+      throw CompileError(e.message)
+    }
   }
 
   if (opts.dump)

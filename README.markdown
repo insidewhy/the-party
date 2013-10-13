@@ -18,14 +18,16 @@ This tool takes code written in the latest version of JavaScript (EcmaScript 6) 
 
     Options:
 
-      -h, --help          output usage information
-      -c, --compile       Compile output files into same directory as sources
-      -m, --source-maps   Generate source maps
-      -o, --output <dir>  Output compiled JavaScript files to <dir>
-      -d, --dump          Dump ASTs
-      -R, --dont-recurse  Do not recurse into directory arguments
-      -L, --dump-locs     Include locs in dump
-      -S, --dump-sources  Dump source ASTs rather than compiled ASTs
+      -h, --help                output usage information
+      -c, --compile             Compile output files into same directory as sources
+      -d, --dependencies        Compile dependencies of files listed on command-line
+      -m, --source-maps         Generate source maps
+      -o, --output <dir>        Output compiled JavaScript files to <dir>
+      -O, --output-file <file>  Compile input files with dependencies into <file>
+      -D, --dump                Dump ASTs
+      -R, --dont-recurse        Do not recurse into directory arguments
+      -L, --dump-locs           Include locs in dump
+      -S, --dump-sources        Dump source ASTs rather than compiled ASTs
 
 ## Installation
 
@@ -39,9 +41,13 @@ Compile all files with extensions "es6" or "js" recursively reachable from the d
 
 Output files have the extension "es6" replaced with "js" and the-party will issue a warning instead of overwriting a source file.
 
-Compile tiles main.js and lib.js, outputting the compiled files to the directory "build":
+Compile files main.js and lib.js, outputting the compiled files to the directory "build":
 
     the-party -o build main.js lib.js
+
+Compile file main.js and all of its transitively reachable dependencies, outputting the compiled files to the directory "build":
+
+    the-party -do build main.js
 
 Compile files to the same directories as their source files. In this case the source files must have the extension "es6" which will be replaced by "js" for the output files:
 
@@ -102,6 +108,10 @@ class Cat extends Animal {
   }
 }
 
+var michaelTheCat = new Cat("michael")
+console.log("he likes to play:", michaelTheCat.play())
+console.log(michaelTheCat instanceof Cat) // true
+console.log(michaelTheCat instanceof Animal) // true
 ```
 
 ### Class expressions

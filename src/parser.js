@@ -35,7 +35,7 @@ export function argumentsToSources(args, opts) {
           sources.push({
             path: sourcePath,
             ast: parseSourceFile(sourcePath, opts),
-            dirArg: arg
+            baseDir:  opts.compile ? '.' : arg
           })
         }
       })
@@ -44,7 +44,8 @@ export function argumentsToSources(args, opts) {
       // arg is path to source file
       sources.push({
         path: arg,
-        ast: parseSourceFile(arg, opts)
+        ast: parseSourceFile(arg, opts),
+        baseDir: '.'
       })
     }
   })

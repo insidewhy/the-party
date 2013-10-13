@@ -3,10 +3,11 @@ module opts from 'commander'
 
 opts
   .option('-c, --compile', 'Compile output files into same directory as sources')
+  .option('-d, --dependencies', 'Compile dependencies of files listed on command-line')
   .option('-m, --source-maps', 'Generate source maps')
   .option('-o, --output <dir>', 'Output compiled JavaScript files to <dir>')
   .option('-O, --output-file <file>', 'Compile input files with dependencies into <file>')
-  .option('-d, --dump', 'Dump ASTs')
+  .option('-D, --dump', 'Dump ASTs')
   .option('-R, --dont-recurse', 'Do not recurse into directory arguments')
   .option('-L, --dump-locs', 'Include locs in dump')
   .option('-S, --dump-sources', 'Dump source ASTs rather than compiled ASTs')
