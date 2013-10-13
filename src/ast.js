@@ -1,5 +1,7 @@
 module translator from './translator'
 
+// @TODO: Convert this into a class I guess
+
 // Tree walking stuff
 // The compileNode function also stores the current context as attributes
 function compileNode(node) {
