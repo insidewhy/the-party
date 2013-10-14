@@ -181,3 +181,18 @@ var list = [ 0, 1, 2, 3 ]
 var [ a, b ] = list // var a = 0, b = 1
 var [ , b, , c ] = list // var b = 1, c = 3
 ```
+
+## A note on modules
+
+Modules without "./" or "../" at the beginning are assumed to be common modules and are not attempted to be resolved by the compiler.
+
+Modules referenced by a path name beginning with "./" or "../" are assumed to be relative modules and are loaded when the --output-file or --dependencies options are used. The source code should not use the file extension ".js" or ".es6" in module import statements so a file in the current module path "file.js" would be referenced as such:
+
+```JavaScript
+module file from './file'
+```
+
+Not:
+```JavaScript
+module file from './file.js'
+```
