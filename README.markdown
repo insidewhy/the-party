@@ -19,6 +19,7 @@ This tool takes code written in the latest version of JavaScript (EcmaScript 6) 
     Options:
 
       -h, --help                output usage information
+      -b, --bare                Compile without define wrapper, suitable for commonJS module system
       -c, --compile             Compile output files into same directory as sources
       -d, --dependencies        Compile dependencies of files listed on command-line
       -m, --source-maps         Generate source maps
@@ -35,19 +36,23 @@ This tool takes code written in the latest version of JavaScript (EcmaScript 6) 
 
 ## Examples
 
-Compile all files with extensions "es6" or "js" recursively reachable from the directory "source" to the directory "build":
+Compile all files with extensions "es6" or "js" recursively reachable from the directory "source" to the directory "build" with output suitable for a require compatible loader:
 
     the-party -o build source
 
 Output files have the extension "es6" replaced with "js" and the-party will issue a warning instead of overwriting a source file.
 
-Compile files main.js and lib.js, outputting the compiled files to the directory "build":
+Compile files main.js and lib.js, outputting the compiled files to the directory "build" with output suitable for a commonJS type module system such as node.js:
 
-    the-party -o build main.js lib.js
+    the-party -bo build main.js lib.js
 
 Compile file main.js and all of its transitively reachable dependencies, outputting the compiled files to the directory "build":
 
     the-party -do build main.js
+
+Compile file main.es6 and all of its transitively reachable dependencies, outputting the compiled files to the single output file main.js which is a self-contained file that will work with or without any module loader system (browsers/node.js/phantom etc.). This also produces a map file which will relate the single output file to all of the source files.
+
+    the-party -mO main.js main.es6
 
 Compile files to the same directories as their source files. In this case the source files must have the extension "es6" which will be replaced by "js" for the output files:
 

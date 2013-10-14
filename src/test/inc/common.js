@@ -4,4 +4,12 @@
 module theparty from '../../lib/the-party'
 module chai from 'chai'
 
-export var expect = chai.expect, compile = theparty.compile
+export var expect = chai.expect,
+           compile = (arg, opts) => {
+             if (! opts)
+               opts = {}
+             if (opts.bare === undefined)
+               opts.bare = true
+
+             return theparty.compile(arg, opts)
+           }

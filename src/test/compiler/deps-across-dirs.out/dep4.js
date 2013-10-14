@@ -1,1 +1,3 @@
-var dep4;
+var fourth = exports.fourth = function () {
+    return 4;
+  };

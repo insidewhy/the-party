@@ -1,1 +1,1 @@
-{"version":3,"sources":["src/test/compiler/deps-across-dirs/dep4.js"],"names":["dep4"],"mappings":"AAAA,IAAIA,IAAJ"}
+{"version":3,"sources":["src/test/compiler/deps-across-dirs/dep4.js"],"names":["fourth","exports"],"mappings":"AAAO,IAASA,MAAT,GAAAC,OAAA,CAASD,MAAT,eAAkB;IAAE,OAAO,CAAP,CAAF;GAAlB"}

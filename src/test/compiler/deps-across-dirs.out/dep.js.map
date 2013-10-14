@@ -1,1 +1,1 @@
-{"version":3,"sources":["src/test/compiler/deps-across-dirs/dep.es6"],"names":["dep2","require","dep"],"mappings":"AAAA,IAAOA,IAAP,GAAAC,OAAA,CAAiB,YAAjB;AACA,IAAIC,GAAJ"}
+{"version":3,"sources":["src/test/compiler/deps-across-dirs/dep.es6"],"names":["dep2","require","first","exports","second"],"mappings":"AAAA,IAAOA,IAAP,GAAAC,OAAA,CAAiB,YAAjB;AACO,IAASC,KAAT,GAAAC,OAAA,CAASD,KAAT,eAAiB;IAAE,OAAO,IAAIF,IAAA,CAAKI,MAAL,EAAX,CAAF;GAAjB"}

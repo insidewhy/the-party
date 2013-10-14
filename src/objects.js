@@ -72,25 +72,56 @@ export class JSObjects {
     return ret
   }
 
-  /// Populates map/code members of all objects in this.hash
-  /// @param modules Optional modules override, if not given all current
-  ///                modules are compiled.
-  buildSourceCodeFromAsts() {
-    Object.keys(this.hash).forEach(objectModule => {
-      var output, object = this.hash[objectModule], ast = object.ast
+  /// Generate map/code entries for object.
+  _buildSourceCodeFromAst(object) {
+    if (this.opts.sourceMaps) {
+      var tmp = generate(object.ast, {
+        sourceMapWithCode: true,
+        sourceMap: true, // from loc.source
+        format: CODEGEN_FORMAT
+      })
+      object.map = tmp.map
+      object.code = tmp.code
+    }
+    else {
+      object.code = generate(object.ast)
+    }
+  }
 
-      if (this.opts.sourceMaps) {
-        var tmp = generate(ast, {
-          sourceMapWithCode: true,
-          sourceMap: true, // from loc.source
-          format: CODEGEN_FORMAT
-        })
-        object.map = tmp.map
-        object.code = tmp.code
-      }
-      else {
-        object.code = generate(ast)
-      }
+  wrapBodiesInDefine() {
+    Object.keys(this.hash).forEach(objectModule => {
+      var ast = this.hash[objectModule].ast
+      var oldBody = ast.body
+      ast.body = [ {
+        type: "ExpressionStatement",
+        expression: {
+          type: "CallExpression",
+          callee: { type: "Identifier", name: "define" },
+          arguments: [
+            {
+              type: "Literal",
+              value: objectModule,
+              raw: "'" + objectModule + "'"
+            },
+            {
+              type: "FunctionExpression",
+              id: null,
+              params: [
+                { type: "Identifier", name: "require" },
+                { type: "Identifier", name: "exports" }
+              ],
+              defaults: [],
+              body: {
+                type: "BlockStatement",
+                body: oldBody
+              },
+              rest: null,
+              generator: false,
+              expression: false
+            }
+          ]
+        }
+      } ]
     })
   }
 
@@ -99,6 +130,7 @@ export class JSObjects {
   output(targetDir) {
     Object.keys(this.hash).forEach(objectModule => {
       var object = this.hash[objectModule]
+      this._buildSourceCodeFromAst(object)
 
       var destPath = path.join(targetDir, objectModule + ".js")
 
@@ -113,6 +145,42 @@ export class JSObjects {
         fs.writeFileSync(destPath, object.code)
       }
     })
+  }
+
+  /// Compile all objects together into a single output file.
+  outputFile(file) {
+    // Make combined AST according to dependency order
+    // var ast = {
+    //   type: 'Program',
+    //   // TODO: first comes the "header" including define
+    //   body: []
+    // }
+
+    var header =
+      path.join(path.dirname(fs.realpathSync(__filename)), 'define.js')
+
+    var ast = parseSourceFile(header, { withoutLocs: true })
+
+    var generateModule = objectModule => {
+      var object = this.hash[objectModule]
+      if (! object.generated) {
+        object.generated = true
+        object.deps.forEach(generateModule)
+
+        // TODO: put inside define() wrapper
+        ast.body = ast.body.concat(object.ast.body)
+      }
+    }
+
+    Object.keys(this.hash).forEach(generateModule)
+
+    var object = { ast }
+    this._buildSourceCodeFromAst(object)
+
+    mkpath(path.dirname(file))
+    if (object.map)
+      fs.writeFileSync(file + '.map', object.map)
+    fs.writeFileSync(file, object.code)
   }
 }
 

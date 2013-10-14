@@ -1,2 +1,4 @@
 var dep2 = require('./lib/dep2');
-var dep;
+var first = exports.first = function () {
+    return 1 + dep2.second();
+  };

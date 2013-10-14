@@ -15,7 +15,8 @@ module.exports = function(grunt) {
     theparty.compile(['src'], {
       output: 'lib',
       dontRecurse: true,
-      sourceMaps: true
+      sourceMaps: true,
+      bare: true
     })
   })
 
@@ -23,7 +24,12 @@ module.exports = function(grunt) {
     var theparty = require('./lib/the-party')
     var cwd = process.cwd()
 
-    var opts = { output: 'test', sourceMaps: true, dontRecurse: true }
+    var opts = {
+      output: 'test',
+      sourceMaps: true,
+      dontRecurse: true,
+      bare: true
+    }
     theparty.compile(['src/test'], opts)
     opts.output = 'test/inc'
     theparty.compile(['src/test/inc'], opts)
@@ -43,7 +49,7 @@ module.exports = function(grunt) {
     process.chdir('test/web')
 
     try {
-      theparty.compile(['src'], { output: '.', sourceMaps: true })
+      theparty.compile(['src'], { output: '.', sourceMaps: true, bare: true })
 
       var http = require('http'),
           fs   = require('fs')

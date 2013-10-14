@@ -1,1 +1,1 @@
-var dep4
+export function fourth() { return 4 }

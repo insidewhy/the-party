@@ -5,9 +5,9 @@ import parse from 'esprima-the-party'
 module ast from './ast'
 import generate from 'escodegen'
 
-export class CompileError extends Error {
+export class UsageError extends Error {
   constructor(message) {
-    this.name = 'CompileError'
+    this.name = 'UsageError'
     this.message = message
   }
 }
@@ -27,8 +27,8 @@ export function compile(arg, opts) {
 
   if (opts.compile) {
     if (opts.output) {
-      console.error("--compile option used with --output, ignoring --compile")
-      delete opts.compile
+      throw new UsageError(
+        'compile: "compile" option not compatible with "output"')
     }
     else {
       opts.output = '.'
@@ -36,9 +36,8 @@ export function compile(arg, opts) {
   }
 
   if (opts.outputFile) {
-    if (opts.output)
-      throw new CompileError("--output and --output-file options conflict")
     opts.dependencies = true
+    opts.bare = false
   }
 
   opts.withoutLocs = (opts.dump || opts.dumpSources) && ! opts.dumpLocs
@@ -47,7 +46,7 @@ export function compile(arg, opts) {
     // arg = code to be compiled
     var compiledAst = ast.compileObjectNode(parse(arg))
     if (opts.output || opts.outputFile) {
-      throw new CompileError(
+      throw new UsageError(
         "compile(string, { output/outputFile } currently not working.")
     }
 
@@ -71,17 +70,21 @@ export function compile(arg, opts) {
       }
     }
     catch (e) {
-      throw CompileError(e.message)
+      throw UsageError(e.message)
     }
   }
+
+  if (! opts.bare)
+    objects.wrapBodiesInDefine()
 
   if (opts.dump)
     return objects.hash
 
-  objects.buildSourceCodeFromAsts()
-
   if (opts.output)
     objects.output(opts.output)
+
+  if (opts.outputFile)
+    objects.outputFile(opts.outputFile)
 
   return objects
 }

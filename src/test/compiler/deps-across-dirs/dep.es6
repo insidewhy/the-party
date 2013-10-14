@@ -1,2 +1,2 @@
 module dep2 from './lib/dep2'
-var dep
+export function first() { return 1 + dep2.second() }

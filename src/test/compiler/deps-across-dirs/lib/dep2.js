@@ -1,2 +1,2 @@
 module dep3 from './dep3'
-var dep2
+export function second() { return 2 + dep3.third() }
