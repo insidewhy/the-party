@@ -1,8 +1,8 @@
-/node_modules
 .*.swp
+.*.swo
+/node_modules
 /lib/*.map
 /test/*.js*
 /test/inc
 /test/web/*.js*
 /test/compiler
-.*.swo

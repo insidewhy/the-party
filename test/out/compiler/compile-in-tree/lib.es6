@@ -1,0 +1,1 @@
+../../../../src/test/compiler/compile-in-tree/lib.es6

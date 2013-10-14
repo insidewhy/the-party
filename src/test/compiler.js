@@ -34,6 +34,7 @@ var exec = (commands, done) => {
 }
 
 var output = path => 'test/compiler/' + path
+var compare = path => 'test/out/compiler/' + path
 var arg = path => 'src/test/compiler/' + path
 
 describe('compiler', () => {
@@ -44,7 +45,7 @@ describe('compiler', () => {
     exec([
       'rm -rf ' + outDir,
       COMPILER + ' -bmo ' + outDir + ' ' + inDir,
-      'diff -r ' + outDir + ' ' + inDir + '.out'
+      'diff -r ' + outDir + ' ' + compare(test)
     ], done)
   })
 
@@ -57,19 +58,20 @@ describe('compiler', () => {
       'rm -rf ' + outDir,
       'cp -r ' + inDir + ' ' + outDir, // copy source
       COMPILER + ' -bcm ' + outDir,
-      'diff -r ' + outDir + ' ' + inDir + '.out'
+      'diff -r ' + outDir + ' ' + compare(test)
     ], done)
   })
 
   it('Concatenates dependencies with -O argument', done => {
-    var outDir  = output('concatenate-deps')
+    var test    = 'concatenate-deps',
+        outDir  = output(test)
         outFile = outDir + '/concatenate-deps.js',
         inDir   = arg('deps-across-dirs')
 
     exec([
       'rm -rf ' + outDir,
       COMPILER + ' -mO ' + outFile + ' ' + inDir,
-      'diff -r ' + outDir + ' ' + arg('concatenate-deps.out')
+      'diff -r ' + outDir + ' ' + compare(test)
     ], done)
   })
 })
