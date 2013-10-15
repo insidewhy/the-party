@@ -1,6 +1,6 @@
 # the-party
 
-This tool takes code written in the latest version of JavaScript (EcmaScript 6) and outputs code written in the current version (EcmaScript 5) so that it can be used in all browsers from IE9+ and most non-IE browsers.
+This tool takes code written in the up-and-coming version of JavaScript (EcmaScript 6) and outputs code written in the current version (EcmaScript 5) so that it can be used in all browsers from IE9+ and most non-IE browsers.
 
  * Support for source maps, this means stack traces show line numbers and columns from the original source, not the transpiled code.
  * Generated code works in:
@@ -8,7 +8,7 @@ This tool takes code written in the latest version of JavaScript (EcmaScript 6) 
    * AMD module systems (require).
    * Non-modular systems (by concatenating modules with their dependencies into a single output file).
  * Test cases for all features (using mocha).
- * Uses esprima for parsing and escodegen for code generation, allows codebase to be small and fast (can compile itself in less than 0.5 seconds on a mid-powered laptop).
+ * Uses esprima for parsing and escodegen for code generation, allows source code to be small and fast (can compile itself in less than 0.5 seconds on a mid-powered laptop).
  * Grunt task runner to make development a bit easier.
 
 ## Usage
@@ -36,29 +36,34 @@ This tool takes code written in the latest version of JavaScript (EcmaScript 6) 
 
 ## Examples
 
+### Compile source directory into multiple files suitable for Require
 Compile all files with extensions "es6" or "js" recursively reachable from the directory "source" to the directory "build" with output suitable for a require compatible loader:
 
     the-party -o build source
 
 Output files have the extension "es6" replaced with "js" and the-party will issue a warning instead of overwriting a source file.
 
+### Compile into multiple files suitable for node.js
 Compile files main.js and lib.js, outputting the compiled files to the directory "build" with output suitable for a commonJS type module system such as node.js:
 
     the-party -bo build main.js lib.js
 
+### Build sources with dependencies
 Compile file main.js and all of its transitively reachable dependencies, outputting the compiled files to the directory "build":
 
     the-party -do build main.js
 
+### Many sources into single output file
 Compile file main.es6 and all of its transitively reachable dependencies, outputting the compiled files to the single output file main.js which is a self-contained file that will work with or without any module loader system (browsers/node.js/phantom etc.). This also produces a map file which will relate the single output file to all of the source files.
 
     the-party -mO main.js main.es6
 
+### Compile output files into same directory as source files.
 Compile files to the same directories as their source files. In this case the source files must have the extension "es6" which will be replaced by "js" for the output files:
 
     the-party -c main.es6 lib.es6 otherfile.es6
 
-# Support
+# Supported EcmaScript 6 features
 
 ## Modules
 
@@ -184,9 +189,9 @@ var [ , b, , c ] = list // var b = 1, c = 3
 
 ## A note on modules
 
-Modules without "./" or "../" at the beginning are assumed to be common modules and are not attempted to be resolved by the compiler.
+Modules paths not beginning with "./" or "../" are assumed to be common modules and are not attempted to be resolved by the compiler.
 
-Modules referenced by a path name beginning with "./" or "../" are assumed to be relative modules and are loaded when the --output-file or --dependencies options are used. The source code should not use the file extension ".js" or ".es6" in module import statements so a file in the current module path "file.js" would be referenced as such:
+Modules paths beginning with "./" or "../" are assumed to be relative modules and are loaded when the --output-file or --dependencies options are used. The source code should not use the file extension ".js" or ".es6" in module import statements so a file in the current module path "file.es6" would be referenced as such:
 
 ```JavaScript
 module file from './file'
@@ -194,5 +199,5 @@ module file from './file'
 
 Not:
 ```JavaScript
-module file from './file.js'
+module file from './file.es6'
 ```

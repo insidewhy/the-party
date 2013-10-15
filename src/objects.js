@@ -7,7 +7,7 @@ import generate from 'escodegen'
 
 export var CODEGEN_FORMAT = { indent: { style: '  ' } }
 
-export class JSObjects {
+export class Objects {
   constructor(opts) {
     this.opts = opts
     this.hash = {} // hash of JSObject types on objectModule key
@@ -125,6 +125,15 @@ export class JSObjects {
     })
   }
 
+  /// Output single object to given path.
+  outputObject(destPath, object) {
+    mkpath(path.dirname(destPath))
+
+    if (object.map)
+      fs.writeFileSync(destPath + '.map', object.map)
+    fs.writeFileSync(destPath, object.code)
+  }
+
   /// Output many code files to the given output directory.
   /// @param targetDir Directory that will hold output files.
   output(targetDir) {
@@ -134,53 +143,42 @@ export class JSObjects {
 
       var destPath = path.join(targetDir, objectModule + ".js")
 
-      if (destPath === object.sourcePath) {
+      if (destPath === object.sourcePath)
         console.error('Source file equals output file for', destPath, 'skipping.')
-      }
-      else {
-        mkpath(path.dirname(destPath))
-
-        if (object.map)
-          fs.writeFileSync(destPath + '.map', object.map)
-        fs.writeFileSync(destPath, object.code)
-      }
+      else
+        this.outputObject(destPath, object)
     })
   }
 
   /// Compile all objects together into a single output file.
   outputFile(file) {
-    // Make combined AST according to dependency order
-    // var ast = {
-    //   type: 'Program',
-    //   // TODO: first comes the "header" including define
-    //   body: []
-    // }
+    this.outputObject(file, this.combineObjects())
+  }
 
+  /// Combine all objects
+  /// @retval A combined object.
+  combineObjects() {
+    // combine all ASTs into single output file
     var header =
       path.join(path.dirname(fs.realpathSync(__filename)), 'define.js')
 
     var ast = parseSourceFile(header, { withoutLocs: true })
 
-    var generateModule = objectModule => {
+    var mergeModule = objectModule => {
       var object = this.hash[objectModule]
       if (! object.generated) {
         object.generated = true
-        object.deps.forEach(generateModule)
+        object.deps.forEach(mergeModule)
 
-        // TODO: put inside define() wrapper
         ast.body = ast.body.concat(object.ast.body)
       }
     }
 
-    Object.keys(this.hash).forEach(generateModule)
+    Object.keys(this.hash).forEach(mergeModule)
 
     var object = { ast }
     this._buildSourceCodeFromAst(object)
-
-    mkpath(path.dirname(file))
-    if (object.map)
-      fs.writeFileSync(file + '.map', object.map)
-    fs.writeFileSync(file, object.code)
+    return object
   }
 }
 

@@ -1,4 +1,4 @@
-import {JSObjects, CODEGEN_FORMAT} from './objects'
+import {Objects, CODEGEN_FORMAT} from './objects'
 import argumentsToSources from './parser'
 
 import parse from 'esprima-the-party'
@@ -58,7 +58,7 @@ export function compile(arg, opts) {
   if (opts.dumpSources)
     return sources
 
-  var objects = new JSObjects(opts)
+  var objects = new Objects(opts)
   objects.compileSources(sources)
 
   if (opts.dependencies) {
