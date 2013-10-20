@@ -18,7 +18,7 @@ function uniqueId(loc) {
 /// Mutates harmony module alias ast into es5 ast
 export function ExportDeclaration(ast, compile) {
   var declaration = ast.declaration
-  var loc, ret
+  var loc, ret, haveCompiled = false
 
   if (declaration.type === 'FunctionDeclaration') {
     // converts function declaration to equivalent variable declaration of
@@ -44,6 +44,7 @@ export function ExportDeclaration(ast, compile) {
   else if (declaration.type === 'ClassDeclaration') {
     // compile to VariableDeclaration then also handled by next if
     declaration = ClassDeclaration(declaration, compile)
+    haveCompiled = true
   }
 
   // May also act on a converted FunctionDeclaration
@@ -61,7 +62,7 @@ export function ExportDeclaration(ast, compile) {
           property: decl.id,
           loc
         },
-        right: compile(prevInit),
+        right: haveCompiled ? prevInit : compile(prevInit),
         loc
       }
     })
@@ -335,8 +336,11 @@ var functionHelper = (ast, compile) => {
     ast.body = compile(ast.body)
   }
 
-  if (ast.rest)
+  if (ast.rest) {
     compileRestParams(ast)
+    // TODO: avoid potential double compilation maybe with below?
+    // ast.rest = null
+  }
 
   return ast
 }
