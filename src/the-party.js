@@ -70,7 +70,7 @@ export function compile(arg, opts) {
       }
     }
     catch (e) {
-      throw UsageError(e.message)
+      throw new UsageError(e.message)
     }
   }
 

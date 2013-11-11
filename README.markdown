@@ -193,6 +193,10 @@ Modules paths not beginning with "./" or "../" are assumed to be common modules 
 
 Modules paths beginning with "./" or "../" are assumed to be relative modules and are loaded when the --output-file or --dependencies options are used. The source code should not use the file extension ".js" or ".es6" in module import statements so a file in the current module path "file.es6" would be referenced as such:
 
+## TODO
+ * Sometimes "undef" is thrown, this might be from the esprima harmony branch this code uses.
+ * Constructors with spread parameters.
+
 ```JavaScript
 module file from './file'
 ```
