@@ -211,3 +211,12 @@ module file from './file.es6'
 ### Note on the source structure
 
 The transpiler is self-hosting and the code for it can be found in the "src" directory. A copy of the transpiled code is stored in git in the "lib" directory (otherwise the project would not be able to compile itself). The mocha tests are stored in the "src/test" directory.
+
+### Building/testing the-party
+
+```Shell
+$ grunt build
+$ grunt test
+```
+
+See "grunt -h" for a list of all targets.
