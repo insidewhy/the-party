@@ -11,6 +11,10 @@ This tool takes code written in the up-and-coming version of JavaScript (EcmaScr
  * Uses esprima for parsing and escodegen for code generation, allows source code to be small and fast (can compile itself in less than 0.5 seconds on a mid-powered laptop).
  * Grunt task runner to make development a bit easier.
 
+# Note on the source structure
+
+The transpiler is written in EcmaScript Harmony syntax itself in src. It maintains a copy of it's own transpiled code in the lib directory.
+
 ## Usage
     $ the-party -h
 
@@ -193,10 +197,6 @@ Modules paths not beginning with "./" or "../" are assumed to be common modules 
 
 Modules paths beginning with "./" or "../" are assumed to be relative modules and are loaded when the --output-file or --dependencies options are used. The source code should not use the file extension ".js" or ".es6" in module import statements so a file in the current module path "file.es6" would be referenced as such:
 
-## TODO
- * Sometimes "undef" is thrown, this might be from the esprima harmony branch this code uses.
- * Constructors with spread parameters.
-
 ```JavaScript
 module file from './file'
 ```
@@ -205,3 +205,7 @@ Not:
 ```JavaScript
 module file from './file.es6'
 ```
+
+## TODO
+ * Sometimes "undef" is thrown, this might be from the esprima harmony branch this code uses.
+ * Constructors with spread parameters.
