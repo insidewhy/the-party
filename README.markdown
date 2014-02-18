@@ -7,13 +7,9 @@ This tool takes code written in the up-and-coming version of JavaScript (EcmaScr
    * CommonJS systems (node/phantom).
    * AMD module systems (require).
    * Non-modular systems (by concatenating modules with their dependencies into a single output file).
- * Test cases for all features (using mocha).
+ * Test cases for all features (using mocha, see src/test).
  * Uses esprima for parsing and escodegen for code generation, allows source code to be small and fast (can compile itself in less than 0.5 seconds on a mid-powered laptop).
  * Grunt task runner to make development a bit easier.
-
-# Note on the source structure
-
-The transpiler is written in EcmaScript Harmony syntax itself in src. It maintains a copy of its own transpiled code in the lib directory.
 
 ## Usage
     $ the-party -h
@@ -209,3 +205,9 @@ module file from './file.es6'
 ## TODO
  * Sometimes "undef" is thrown, this might be from the esprima harmony branch this code uses.
  * Constructors with spread parameters.
+
+## Developing
+
+### Note on the source structure
+
+The transpiler is self-hosting and the code for it can be found in the "src" directory. A copy of the transpiled code is stored in git in the "lib" directory (otherwise the project would not be able to compile itself). The mocha tests are stored in the "src/test" directory.
