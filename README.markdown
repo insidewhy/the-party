@@ -13,7 +13,7 @@ This tool takes code written in the up-and-coming version of JavaScript (EcmaScr
 
 # Note on the source structure
 
-The transpiler is written in EcmaScript Harmony syntax itself in src. It maintains a copy of it's own transpiled code in the lib directory.
+The transpiler is written in EcmaScript Harmony syntax itself in src. It maintains a copy of its own transpiled code in the lib directory.
 
 ## Usage
     $ the-party -h
